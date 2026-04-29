@@ -2,9 +2,9 @@ package oll.business.model;
 
 public enum Role {
     ADMIN("ADMIN"),
-    BUSINESS_ANALYST("BUSINESS_ANALYST"),
+    ANALYST("ANALYST"),
     MANAGER("MANAGER"),
-    WORKER("WORKER");
+    EXECUTOR("EXECUTOR");
 
     private final String value;
 

@@ -47,7 +47,7 @@ public class AuthController {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");
         }
 
