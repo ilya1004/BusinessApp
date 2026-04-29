@@ -39,3 +39,6 @@ build/
 .DS_Store
 
 /node_modules
+/js-logs/console.log
+/diagram.svg
+*.bpmn
