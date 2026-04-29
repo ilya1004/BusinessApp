@@ -1,0 +1,13 @@
+{
+  "name": "business-desktop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true,
+  "dependencies": {
+    "bpmn-js-properties-panel": "^5.54.0"
+  }
+}
