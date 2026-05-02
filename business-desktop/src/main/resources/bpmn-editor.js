@@ -1,5 +1,5 @@
 // =========================================================
-// CONSOLE BRIDGE → FILE LOGGER (отложенная инициализация)
+// CONSOLE BRIDGE → FILE LOGGER (deferred initialization)
 // =========================================================
 (function() {
     const queue = [];
@@ -17,7 +17,7 @@
     function intercept(level) {
         const orig = console[level];
         console[level] = function(...args) {
-            orig.apply(console, args); // Оставляем родную консоль для WebView
+            orig.apply(console, args); // Keep native console for WebView
 
             const msg = args.map(a => {
                 try { return typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a); }
@@ -35,14 +35,14 @@
 
     ['log','error','warn','info','debug'].forEach(intercept);
 
-    // Функция вызывается из Java после регистрации javaBridge
+    // Called from Java after javaBridge is registered
     window.__enableConsoleBridge = function() {
         isBridgeReady = true;
         console.log('🔌 JS Console Bridge activated. Logs will be written to java console.log file.');
         flush();
     };
 
-    // Fallback: если Java не вызвала __enableConsoleBridge, пробуем сами
+    // Fallback: if Java didn't call __enableConsoleBridge, try ourselves
     const checker = setInterval(() => {
         if (window.javaBridge?.log && !isBridgeReady) {
             isBridgeReady = true;
@@ -76,7 +76,7 @@ async function createModeler() {
     try {
         bpmnModeler = new BpmnJS({
             container: '#canvas',
-            // ❌ Убрали keyboard: { bindTo: document } → вызывает warning в UMD
+            // Removed keyboard: { bindTo: document } → causes warning in UMD
             keyboard: true,
             propertiesPanel: { parent: '#properties-panel' },
             additionalModules: additionalModules
@@ -109,14 +109,14 @@ async function loadEmptyDiagram() {
     }
 }
 
-// ====================== Глобальные функции (вызов из Java) ======================
+// Global functions (called from Java)
 window.saveXML = async function() {
     console.log("window.saveXML called");
     if (!bpmnModeler) {
         return console.error('❌ saveXML: bpmnModeler not ready');
     }
     try {
-        // ✅ bpmn-js v18 возвращает Promise, а не вызывает callback
+        // bpmn-js v18 returns a Promise, not a callback
         const result = await bpmnModeler.saveXML({ format: true });
         console.log('📄 XML generated, sending to Java...');
         if (window.javaBridge?.onXMLSaved) {
@@ -153,5 +153,5 @@ window.importXML = async function(xmlContent) {
     }
 };
 
-// Инициализация
+// Initialization
 document.addEventListener('DOMContentLoaded', createModeler);

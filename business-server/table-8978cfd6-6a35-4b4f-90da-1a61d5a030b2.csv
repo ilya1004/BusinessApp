@@ -1,0 +1,51 @@
+﻿Сущность,Поле,SQL Тип,Java Тип,Ограничения / Примечания
+roles,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,name,VARCHAR(50),String,NOT NULL", "UNIQUE" (ADMIN, ANALYST, MANAGER, EXECUTOR)"
+departments,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,name,VARCHAR(100),String,NOT NULL
+,parent_id,INT,Integer / Long,FK → departments.id", "NULLABLE (иерархия)
+users,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,login,VARCHAR(50),String,NOT NULL", "UNIQUE
+,password_hash,VARCHAR(255),String,NOT NULL (BCrypt)
+,role_id,INT,Integer / Long,FK → roles.id", "NOT NULL
+,full_name,VARCHAR(100),String,NOT NULL
+,department_id,INT,Integer / Long,FK → departments.id", "NULLABLE
+process_models,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,name,VARCHAR(100),String,NOT NULL
+,bpmn_xml,TEXT,String,NOT NULL (XML-описание BPMN 2.0)
+,version,INT,Integer,DEFAULT 1
+,created_by,INT,Integer / Long,FK → users.id
+,created_at,TIMESTAMP,LocalDateTime,DEFAULT CURRENT_TIMESTAMP
+process_instances,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,model_id,INT,Integer / Long,FK → process_models.id", "ON DELETE CASCADE
+,status,VARCHAR(20),String / Enum,NOT NULL", "CHECK (status IN (...))
+,started_at,TIMESTAMP,LocalDateTime,NULLABLE
+,finished_at,TIMESTAMP,LocalDateTime,NULLABLE
+,current_state,VARCHAR(100),String,NULLABLE (ID/имя текущего узла BPMN)
+task_definitions,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,model_id,INT,Integer / Long,FK → process_models.id", "ON DELETE CASCADE
+,name,VARCHAR(100),String,NOT NULL
+,default_duration,INT,Integer,NOT NULL (в минутах/часах)
+,expected_cost,"DECIMAL(10,2)",BigDecimal,NOT NULL", "DEFAULT 0.00
+tasks,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,instance_id,INT,Integer / Long,FK → process_instances.id", "ON DELETE CASCADE
+,task_definition_id,INT,Integer / Long,FK → task_definitions.id
+,assignee_id,INT,Integer / Long,FK → users.id", "NULLABLE (до назначения)
+,status,VARCHAR(20),String / Enum,NOT NULL", "CHECK (...)
+,planned_duration,INT,Integer,NOT NULL
+,actual_duration,INT,Integer,NULLABLE
+,started_at,TIMESTAMP,LocalDateTime,NULLABLE
+,completed_at,TIMESTAMP,LocalDateTime,NULLABLE
+scenario_simulations,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,model_id,INT,Integer / Long,FK → process_models.id", "ON DELETE CASCADE
+,parameters_json,JSON / TEXT,String,NOT NULL
+,predicted_kpi,JSON / TEXT,String,NULLABLE
+,created_by,INT,Integer / Long,FK → users.id
+event_log,id,INT,Integer / Long,PK", "AUTO_INCREMENT
+,timestamp,TIMESTAMP,LocalDateTime,NOT NULL", "DEFAULT CURRENT_TIMESTAMP
+,user_id,INT,Integer / Long,FK → users.id", "NULLABLE
+,action_type,VARCHAR(50),String,NOT NULL
+,details,TEXT,String,NULLABLE
+role_permissions,id,INT,Integer / Long,PK
+,role_id,INT,Integer / Long,FK → roles.id", "NOT NULL
+,permission,VARCHAR(100),String,NOT NULL", ""UNIQUE (role_id, permission)"

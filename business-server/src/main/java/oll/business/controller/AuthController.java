@@ -4,6 +4,8 @@ import oll.business.model.Role;
 import oll.business.model.User;
 import oll.business.repository.UserRepository;
 import oll.business.service.JwtUtils;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,4 +60,5 @@ public class AuthController {
     public record RegisterRequest(String username, String password, String firstName, String lastName, String role) {}
     public record LoginRequest(String username, String password) {}
     public record AuthResponse(String token) {}
+    public record UserInfo(Long id, String username, Role role, String firstName, String lastName) {}
 }

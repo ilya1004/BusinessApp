@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="oll.businessdesktop.DepartmentsManagementController"
+            styleClass="departments-root">
+    <top>
+        <HBox spacing="10" styleClass="departments-toolbar">
+            <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
+            <Button text="Create Department" onAction="#onCreateDepartment" styleClass="create-button"/>
+            <Button text="Edit" onAction="#onEditDepartment" styleClass="edit-button"/>
+            <Button text="Delete Department" onAction="#onDeleteDepartment" styleClass="delete-button"/>
+        </HBox>
+    </top>
+    <center>
+        <TreeView fx:id="departmentsTree" styleClass="departments-tree"/>
+    </center>
+</BorderPane>

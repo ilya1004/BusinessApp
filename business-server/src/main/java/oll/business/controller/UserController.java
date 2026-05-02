@@ -2,20 +2,26 @@ package oll.business.controller;
 
 import oll.business.model.Role;
 import oll.business.model.User;
+import oll.business.repository.UserRepository;
 import oll.business.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
@@ -23,11 +29,28 @@ public class UserController {
         return userService.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/roles")
+    public List<Role> findAllRoles() {
+        return Arrays.asList(Role.values());
+    }
+
+    @GetMapping("/{id:\\d+}")
     public User findById(@PathVariable Long id) {
         return userService.findById(id);
     }
 
+    @GetMapping("/me")
+    public AuthController.UserInfo me(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return new AuthController.UserInfo(
+                user.getId(),
+                user.getUsername(),
+                user.getRole(),
+                user.getFirstName(),
+                user.getLastName()
+        );
+    }
     @GetMapping("/username/{username}")
     public User findByUsername(@PathVariable String username) {
         return userService.findByUsername(username);
