@@ -16,12 +16,12 @@ public class MainLayoutController {
 
     @FXML
     public void initialize() {
-        loadBpmnEditor();
+        loadProcessDesigner();
     }
 
     @FXML
     private void onBpmnTab() {
-        loadBpmnEditor();
+        loadProcessDesigner();
     }
 
     @FXML
@@ -64,10 +64,10 @@ public class MainLayoutController {
         }
     }
 
-    private void loadBpmnEditor() {
+    private void loadProcessDesigner() {
         pageTitle.setText("BPMN Editor");
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/bpmn-editor-view.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-designer-view.fxml"));
             Pane view = loader.load();
             contentArea.setCenter(view);
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));

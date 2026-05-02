@@ -42,3 +42,5 @@ build/
 /js-logs/console.log
 /diagram.svg
 *.bpmn
+
+!saved-diagrams/

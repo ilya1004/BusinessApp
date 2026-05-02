@@ -5,9 +5,10 @@
     const queue = [];
     const MAX_QUEUE = 2000;
     let isBridgeReady = false;
+    let isLogging = false;
 
     function flush() {
-        if (!isBridgeReady || !window.javaBridge?.log) return;
+        if (!isBridgeReady || !window.javaBridge || typeof window.javaBridge.log !== 'function') return;
         while (queue.length > 0) {
             const entry = queue.shift();
             try { window.javaBridge.log(entry.level, entry.msg); } catch(e) {}
@@ -17,18 +18,27 @@
     function intercept(level) {
         const orig = console[level];
         console[level] = function(...args) {
-            orig.apply(console, args); // Keep native console for WebView
+            if (isLogging) return orig.apply(console, args);
+            isLogging = true;
+            try {
+                orig.apply(console, args);
 
-            const msg = args.map(a => {
-                try { return typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a); }
-                catch(e) { return '[Unserializable]'; }
-            }).join(' ');
-
-            if (isBridgeReady && window.javaBridge?.log) {
-                try { window.javaBridge.log(level.toUpperCase(), msg); } catch(e) {}
-            } else {
-                queue.push({ level: level.toUpperCase(), msg });
-                if (queue.length > MAX_QUEUE) queue.shift();
+                if (!isBridgeReady || !window.javaBridge || typeof window.javaBridge.log !== 'function') {
+                    const msg = args.map(a => {
+                        try { return typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a); }
+                        catch(e) { return '[Unserializable]'; }
+                    }).join(' ');
+                    queue.push({ level: level.toUpperCase(), msg });
+                    if (queue.length > MAX_QUEUE) queue.shift();
+                } else {
+                    const msg = args.map(a => {
+                        try { return typeof a === 'object' && a !== null ? JSON.stringify(a) : String(a); }
+                        catch(e) { return '[Unserializable]'; }
+                    }).join(' ');
+                    window.javaBridge.log(level.toUpperCase(), msg);
+                }
+            } finally {
+                isLogging = false;
             }
         };
     }
@@ -38,17 +48,15 @@
     // Called from Java after javaBridge is registered
     window.__enableConsoleBridge = function() {
         isBridgeReady = true;
-        console.log('🔌 JS Console Bridge activated. Logs will be written to java console.log file.');
         flush();
     };
 
     // Fallback: if Java didn't call __enableConsoleBridge, try ourselves
     const checker = setInterval(() => {
-        if (window.javaBridge?.log && !isBridgeReady) {
+        if (window.javaBridge && typeof window.javaBridge.log === 'function' && !isBridgeReady) {
             isBridgeReady = true;
             flush();
             clearInterval(checker);
-            console.log('🔍 Auto-detected javaBridge. Bridge activated.');
         }
     }, 500);
     setTimeout(() => clearInterval(checker), 10000);
@@ -68,20 +76,16 @@ async function createModeler() {
             props.BpmnPropertiesPanelModule,
             props.BpmnPropertiesProviderModule
         );
-        console.log('✅ Properties Panel modules loaded');
-    } else {
-        console.warn('⚠️ Properties Panel not found. Skipping.');
     }
 
     try {
         bpmnModeler = new BpmnJS({
             container: '#canvas',
-            // Removed keyboard: { bindTo: document } → causes warning in UMD
             keyboard: true,
-            propertiesPanel: { parent: '#properties-panel' },
             additionalModules: additionalModules
         });
         console.log('✅ BpmnJS instance created');
+        setupElementListeners();
         await loadEmptyDiagram();
     } catch (err) {
         console.error('❌ BpmnJS init failed:', err);
@@ -109,48 +113,108 @@ async function loadEmptyDiagram() {
     }
 }
 
-// Global functions (called from Java)
-window.saveXML = async function() {
-    console.log("window.saveXML called");
-    if (!bpmnModeler) {
-        return console.error('❌ saveXML: bpmnModeler not ready');
-    }
+function setupElementListeners() {
+    var eventBus = bpmnModeler.get('eventBus');
+
+    eventBus.on('commandStack.shape.create.executed', function(event) {
+        var context = event.context;
+        var shape = context.shape;
+        if (shape && shape.businessObject) {
+            sendElementInfo(shape, 'created');
+        }
+    });
+
+    eventBus.on('commandStack.connection.create.executed', function(event) {
+        var context = event.context;
+        var connection = context.connection;
+        if (connection && connection.businessObject) {
+            sendElementInfo(connection, 'connected');
+        }
+    });
+
+    eventBus.on('element.changed', function(event) {
+        var element = event.element;
+        if (element && element.type !== 'label' && element.businessObject) {
+            sendElementInfo(element, 'changed');
+        }
+    });
+
+    eventBus.on('selection.changed', function(event) {
+        var selected = event.newSelection;
+        if (selected && selected.length > 0) {
+            var element = selected[0];
+            if (element.type !== 'label' && element.businessObject) {
+                sendElementSelected(element);
+            }
+        }
+    });
+}
+
+function sendElementInfo(element, action) {
+    var info = {
+        action: action,
+        id: element.id,
+        type: element.businessObject.$type,
+        name: element.businessObject.name || '',
+        x: element.x || 0,
+        y: element.y || 0,
+        width: element.width || 0,
+        height: element.height || 0
+    };
     try {
-        // bpmn-js v18 returns a Promise, not a callback
-        const result = await bpmnModeler.saveXML({ format: true });
-        console.log('📄 XML generated, sending to Java...');
-        if (window.javaBridge?.onXMLSaved) {
+        window.javaBridge.onElementCreated(JSON.stringify(info));
+    } catch(e) {
+        console.error('Bridge error:', e);
+    }
+}
+
+function sendElementSelected(element) {
+    var info = {
+        id: element.id,
+        type: element.businessObject.$type,
+        name: element.businessObject.name || '',
+        x: element.x || 0,
+        y: element.y || 0,
+        width: element.width || 0,
+        height: element.height || 0
+    };
+    try {
+        window.javaBridge.onElementSelected(JSON.stringify(info));
+    } catch(e) {
+        console.error('Bridge error:', e);
+    }
+}
+
+// Global functions (called from Java)
+window.saveXML = function() {
+    if (!bpmnModeler) return console.error('saveXML: bpmnModeler not ready');
+    bpmnModeler.saveXML({ format: true }).then(function(result) {
+        if (window.javaBridge && window.javaBridge.onXMLSaved) {
             window.javaBridge.onXMLSaved(result.xml);
         }
-    } catch (err) {
-        console.error('❌ saveXML failed:', err.message || err);
-    }
+    }).catch(function(err) {
+        console.error('saveXML failed:', err);
+    });
 };
 
-window.exportSVG = async function() {
-    console.log("window.exportSVG called");
-    if (!bpmnModeler) {
-        return console.error('❌ exportSVG: bpmnModeler not ready');
-    }
-    try {
-        const result = await bpmnModeler.saveSVG();
-        console.log('🖼️ SVG generated, sending to Java...');
-        if (window.javaBridge?.onSVGExported) {
+window.exportSVG = function() {
+    if (!bpmnModeler) return console.error('exportSVG: bpmnModeler not ready');
+    bpmnModeler.saveSVG().then(function(result) {
+        if (window.javaBridge && window.javaBridge.onSVGExported) {
             window.javaBridge.onSVGExported(result.svg);
         }
-    } catch (err) {
-        console.error('❌ exportSVG failed:', err.message || err);
-    }
+    }).catch(function(err) {
+        console.error('exportSVG failed:', err);
+    });
 };
 
-window.importXML = async function(xmlContent) {
-    if (!bpmnModeler) return console.error('❌ importXML: bpmnModeler not ready');
-    try {
-        await bpmnModeler.importXML(xmlContent);
-        console.log('✅ XML imported successfully');
-    } catch (err) {
-        console.error('❌ importXML failed:', err.message);
-    }
+window.importXML = function(xmlContent) {
+    if (!bpmnModeler) return console.error('importXML: bpmnModeler not ready');
+    bpmnModeler.importXML(xmlContent).then(function() {
+        console.log('XML imported successfully');
+    }).catch(function(err) {
+        console.error('importXML failed:', err.message);
+    });
 };
 
 // Initialization

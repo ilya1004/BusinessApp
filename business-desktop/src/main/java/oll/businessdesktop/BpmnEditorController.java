@@ -81,12 +81,20 @@ public class BpmnEditorController {
 
     @FXML
     private void onSaveXML() {
-        safeExecScript("saveXML();");
+        try {
+            engine.executeScript("window.saveXML()");
+        } catch (Exception e) {
+            System.err.println("JS Error: " + e.getMessage());
+        }
     }
 
     @FXML
     private void onExportSVG() {
-        safeExecScript("exportSVG();");
+        try {
+            engine.executeScript("window.exportSVG()");
+        } catch (Exception e) {
+            System.err.println("JS Error: " + e.getMessage());
+        }
     }
 
     private void safeExecScript(String script) {
@@ -116,9 +124,10 @@ public class BpmnEditorController {
 
         public JavaBridge(Path logFile) throws IOException {
             Files.createDirectories(logFile.getParent());
-            logWriter = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8,
+            Path absolutePath = logFile.toAbsolutePath().normalize();
+            logWriter = Files.newBufferedWriter(absolutePath, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.WRITE);
-            writeLog("SYSTEM", "Logger initialized → " + logFile.toAbsolutePath());
+            writeLog("SYSTEM", "Logger initialized -> " + absolutePath);
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try { logWriter.flush(); logWriter.close(); } catch (IOException ignored) {}
             }));

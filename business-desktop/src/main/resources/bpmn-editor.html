@@ -4,40 +4,22 @@
     <meta charset="UTF-8">
     <title>BPMN Modeler — JavaFX</title>
 
-    <!-- bpmn-js core -->
     <script src="https://unpkg.com/bpmn-js@18/dist/bpmn-modeler.production.min.js"></script>
 
-    <!-- Properties Panel: SINGLE UMD bundle (includes @bpmn-io/properties-panel internally) -->
-    <script src="https://cdn.jsdelivr.net/npm/bpmn-js-properties-panel@5/dist/bpmn-js-properties-panel.umd.js"></script>
-
-    <!-- Styles -->
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/bpmn-js.css">
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/diagram-js.css">
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/bpmn-font/css/bpmn.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bpmn-js-properties-panel@5/dist/assets/properties-panel.css">
 
     <style>
         html, body {
             height: 100%; margin: 0; padding: 0; overflow: hidden;
             font-family: Arial, sans-serif;
         }
-        .modeler-container {
-            display: flex; height: 100%; width: 100%;
-        }
-        #canvas { flex: 1; height: 100%; }
-        #properties-panel {
-            width: 300px; height: 100%;
-            border-left: 1px solid #ccc;
-            background: #fff; overflow-y: auto;
-        }
-        @media (max-width: 768px) { #properties-panel { display: none; } }
+        #canvas { height: 100%; width: 100%; }
     </style>
 </head>
 <body>
-<div class="modeler-container">
-    <div id="canvas"></div>
-    <div id="properties-panel"></div>
-</div>
+<div id="canvas"></div>
 <script src="bpmn-editor.js"></script>
 </body>
 </html>
