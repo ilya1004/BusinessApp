@@ -113,6 +113,28 @@ async function loadEmptyDiagram() {
     }
 }
 
+window.importXML = function(xmlContent) {
+    if (!bpmnModeler) return console.error('importXML: bpmnModeler not ready');
+    bpmnModeler.importXML(xmlContent).then(function() {
+        console.log('XML imported successfully');
+    }).catch(function(err) {
+        console.error('importXML failed:', err.message);
+    });
+};
+
+window.updateElementName = function(elementId, newName) {
+    if (!bpmnModeler) return console.error('updateElementName: bpmnModeler not ready');
+    try {
+        var elementRegistry = bpmnModeler.get('elementRegistry');
+        var modeling = bpmnModeler.get('modeling');
+        var element = elementRegistry.get(elementId);
+        if (!element) return console.error('updateElementName: element not found: ' + elementId);
+        modeling.updateProperties(element, { name: newName });
+    } catch(err) {
+        console.error('updateElementName failed:', err.message);
+    }
+};
+
 function setupElementListeners() {
     var eventBus = bpmnModeler.get('eventBus');
 

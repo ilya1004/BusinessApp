@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="oll.businessdesktop.ProcessInstancesController">
+    <top>
+        <VBox spacing="8">
+            <padding><Insets top="15" bottom="10" left="15" right="15"/></padding>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Instance:" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+                <ComboBox fx:id="instanceSelector" prefWidth="350" promptText="Select an instance..."/>
+            </HBox>
+            <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="15" style="-fx-padding: 10;">
+            <VBox fx:id="infoContainer" spacing="8" styleClass="panel-box">
+                <Label text="Process Instance Information" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <HBox fx:id="processInfoRows" spacing="20"/>
+            </VBox>
+            <VBox fx:id="tableContainer" spacing="8" styleClass="panel-box" VBox.vgrow="ALWAYS">
+                <Label text="Tasks" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <TableView fx:id="taskTable" prefHeight="500" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colId" text="Task ID" prefWidth="70"/>
+                        <TableColumn fx:id="colElementId" text="Element ID" prefWidth="150"/>
+                        <TableColumn fx:id="colName" text="Name" prefWidth="200"/>
+                        <TableColumn fx:id="colStatus" text="Status" prefWidth="120"/>
+                        <TableColumn fx:id="colDuration" text="Duration (plan / actual)" prefWidth="160"/>
+                        <TableColumn fx:id="colDeviation" text="Deviation %" prefWidth="100"/>
+                        <TableColumn fx:id="colKpiWeight" text="KPI Weight" prefWidth="100"/>
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

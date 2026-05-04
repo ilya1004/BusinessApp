@@ -23,6 +23,7 @@
                 <Button text="New Diagram" onAction="#onNewDiagram"/>
                 <Button text="Open .bpmn" onAction="#onOpenFile"/>
                 <Button text="Save" onAction="#onSaveXML"/>
+                <Button text="Open from DB" onAction="#onOpenFromDb"/>
                 <Separator/>
                 <Button text="Export SVG" onAction="#onExportSVG"/>
                 <Region HBox.hgrow="ALWAYS"/>

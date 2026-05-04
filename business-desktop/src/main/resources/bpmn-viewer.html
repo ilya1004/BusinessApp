@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BPMN Viewer</title>
+    <script src="https://unpkg.com/bpmn-js@18/dist/bpmn-viewer.production.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/bpmn-js.css">
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/diagram-js.css">
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/bpmn-font/css/bpmn.css">
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        #canvas { height: 100%; width: 100%; }
+        .bjs-powered-by { display: none !important; }
+    </style>
+</head>
+<body>
+<div id="canvas"></div>
+<script>
+let bpmnViewer;
+document.addEventListener('DOMContentLoaded', function() {
+    bpmnViewer = new BpmnJS({ container: '#canvas' });
+});
+window.renderDiagram = function(xml) {
+    if (!bpmnViewer) return console.error('bpmnViewer not ready');
+    bpmnViewer.importXML(xml).then(function() {
+        bpmnViewer.get('canvas').zoom('fit-viewport', 'auto');
+    }).catch(function(err) {
+        console.error('renderDiagram failed:', err.message);
+    });
+};
+window.clearDiagram = function() {
+    if (!bpmnViewer) return;
+    bpmnViewer.clear();
+};
+window.zoomToFit = function(width) {
+    if (!bpmnViewer) return;
+    try {
+        var canvas = bpmnViewer.get('canvas');
+        var elementRegistry = bpmnViewer.get('elementRegistry');
+        var rootElement = elementRegistry.find(function(e) { return e.type === 'bpmn:Process'; });
+        if (rootElement) {
+            canvas.zoom('fit-viewport', rootElement);
+        }
+    } catch(err) {}
+};
+</script>
+</body>
+</html>

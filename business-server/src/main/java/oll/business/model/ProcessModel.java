@@ -1,7 +1,11 @@
 package oll.business.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class ProcessModel {
@@ -21,7 +25,26 @@ public class ProcessModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
+    @JsonIgnore
     private User author;
+
+    @OneToMany(mappedBy = "model", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonProperty("taskDefinitions")
+    private List<TaskDefinition> taskDefinitions = new ArrayList<>();
+
+    @JsonProperty("authorId")
+    public Long getAuthorId() {
+        return author != null ? author.getId() : null;
+    }
+
+    @JsonProperty("authorId")
+    public void setAuthorId(Long authorId) {
+        if (authorId != null) {
+            User u = new User();
+            u.setId(authorId);
+            this.author = u;
+        }
+    }
 
     @Column
     private LocalDateTime createdAt;
@@ -47,4 +70,6 @@ public class ProcessModel {
     public void setAuthor(User author) { this.author = author; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public List<TaskDefinition> getTaskDefinitions() { return taskDefinitions; }
+    public void setTaskDefinitions(List<TaskDefinition> taskDefinitions) { this.taskDefinitions = taskDefinitions; }
 }

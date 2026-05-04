@@ -16,6 +16,8 @@
         <VBox spacing="5" styleClass="sidebar" xmlns="http://javafx.com/fxml">
             <padding><Insets top="15" bottom="15" left="10" right="10"/></padding>
             <Button text="Process Designer" onAction="#onProcessDesignerTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Process View" onAction="#onProcessViewTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Process Instances" onAction="#onProcessInstancesTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Users" onAction="#onUsersTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Organization" onAction="#onDepartmentsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Tab 2" onAction="#onTab2" maxWidth="Infinity" styleClass="sidebar-button"/>

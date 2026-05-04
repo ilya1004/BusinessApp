@@ -14,9 +14,18 @@ public class MainLayoutController {
     @FXML private BorderPane contentArea;
     @FXML private javafx.scene.control.Label pageTitle;
 
+    private static MainLayoutController instance;
+
     @FXML
     public void initialize() {
+        instance = this;
         loadProcessDesigner();
+    }
+
+    public static void navigateToInstances(Long instanceId) {
+        if (instance != null) {
+            instance.onProcessInstancesTab(instanceId);
+        }
     }
 
     @FXML
@@ -35,6 +44,20 @@ public class MainLayoutController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Process Designer load error: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onProcessViewTab() {
+        pageTitle.setText("Process View");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-view-view.fxml"));
+            Pane view = loader.load();
+            contentArea.setCenter(view);
+            BorderPane.setMargin(view, new javafx.geometry.Insets(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Process View load error: " + e.getMessage());
         }
     }
 
@@ -102,6 +125,28 @@ public class MainLayoutController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Page load error: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onProcessInstancesTab() {
+        onProcessInstancesTab(null);
+    }
+
+    private void onProcessInstancesTab(Long instanceId) {
+        pageTitle.setText("Process Instances");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-instances-view.fxml"));
+            Pane view = loader.load();
+            ProcessInstancesController controller = loader.getController();
+            if (controller != null && instanceId != null) {
+                controller.selectInstanceById(instanceId);
+            }
+            contentArea.setCenter(view);
+            BorderPane.setMargin(view, new javafx.geometry.Insets(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Process Instances load error: " + e.getMessage());
         }
     }
 

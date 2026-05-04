@@ -252,3 +252,11 @@
 .edit-button:hover {
     -fx-background-color: -color-accent-muted;
 }
+
+/* ===== PANEL STYLES ===== */
+
+.panel-box {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 6;
+    -fx-padding: 10;
+}

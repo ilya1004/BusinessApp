@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="oll.businessdesktop.ProcessViewController">
+    <top>
+        <VBox spacing="8">
+            <padding><Insets top="15" bottom="10" left="15" right="15"/></padding>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Diagram:" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+                <ComboBox fx:id="diagramSelector" prefWidth="350" promptText="Select a diagram..."/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="createInstanceBtn" text="Start Instance" onAction="#onCreateInstance"/>
+            </HBox>
+            <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+        </VBox>
+    </top>
+    <center>
+        <ScrollPane fitToHeight="true" fitToWidth="false" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
+            <VBox spacing="15" style="-fx-padding: 10;">
+                <VBox fx:id="diagramContainer" prefHeight="350" styleClass="panel-box" minHeight="350" maxHeight="350">
+                    <padding><Insets top="8" left="8" bottom="8" right="8"/></padding>
+                    <Label text="Diagram Preview" style="-fx-font-size: 14px; -fx-font-weight: bold;">
+                        <VBox.margin><Insets bottom="5"/></VBox.margin>
+                    </Label>
+                    <WebView fx:id="diagramViewer" prefHeight="320" VBox.vgrow="NEVER"/>
+                </VBox>
+                <VBox fx:id="kpiCardsContainer" spacing="10" styleClass="panel-box" visible="false">
+                    <Label text="KPI Metrics" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <HBox spacing="15">
+                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
+                            <Label text="Avg Duration" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                            <Label fx:id="kpiAvgDurationLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        </VBox>
+                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
+                            <Label text="Delay Rate" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                            <Label fx:id="kpiDelayRateLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        </VBox>
+                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
+                            <Label text="Rating" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                            <Label fx:id="kpiRatingLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                <VBox fx:id="kpiWeightsContainer" spacing="8" styleClass="panel-box" visible="false">
+                    <Label text="KPI Weights" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="w1 (Delay):" style="-fx-font-size: 12px;"/>
+                        <Spinner fx:id="w1Spinner" prefWidth="80"/>
+                        <Label text="w2 (Cost):" style="-fx-font-size: 12px;"/>
+                        <Spinner fx:id="w2Spinner" prefWidth="80"/>
+                        <Label text="w3 (Efficiency):" style="-fx-font-size: 12px;"/>
+                        <Spinner fx:id="w3Spinner" prefWidth="80"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="weightsSumLabel" style="-fx-font-size: 12px; -fx-font-weight: bold;"/>
+                        <Button text="Save" onAction="#onSaveWeights" style="-fx-font-size: 12px;"/>
+                    </HBox>
+                </VBox>
+                <VBox fx:id="infoContainer" spacing="8" styleClass="panel-box">
+                    <Label text="Process Information" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <HBox fx:id="processInfoRows" spacing="20"/>
+                </VBox>
+                <VBox fx:id="tableContainer" spacing="8" styleClass="panel-box">
+                    <Label text="Task Definitions" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <TableView fx:id="taskTable" VBox.vgrow="ALWAYS" minHeight="200">
+                        <columns>
+                            <TableColumn fx:id="colElementId" text="Element ID" prefWidth="160"/>
+                            <TableColumn fx:id="colName" text="Name" prefWidth="200"/>
+                            <TableColumn fx:id="colDuration" text="Duration (min)" prefWidth="110"/>
+                            <TableColumn fx:id="colCost" text="Expected Cost ($)" prefWidth="130"/>
+                            <TableColumn fx:id="colKpiWeight" text="KPI Weight" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(indexes = {
+    @Index(name = "idx_instances_model_status_dates", columnList = "model_id, status, startedAt, finishedAt")
+})
 public class ProcessInstance {
 
     @Id

@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(indexes = {
+    @Index(name = "idx_tasks_status_dates", columnList = "status, startedAt, completedAt")
+})
 public class Task {
 
     @Id

@@ -25,9 +25,13 @@ public class RequestLoggingFilter implements Filter {
 
         long startTime = System.currentTimeMillis();
 
+        String path = httpRequest.getRequestURI();
+        String queryString = httpRequest.getQueryString();
+        String fullUrl = queryString != null ? path + "?" + queryString : path;
+
         logger.info(">>> {} {} from {}",
                 httpRequest.getMethod(),
-                httpRequest.getRequestURI(),
+                fullUrl,
                 httpRequest.getRemoteAddr());
 
         chain.doFilter(request, response);
@@ -36,7 +40,7 @@ public class RequestLoggingFilter implements Filter {
 
         logger.info("<<< {} {} -> {} ({}ms)",
                 httpRequest.getMethod(),
-                httpRequest.getRequestURI(),
+                fullUrl,
                 httpResponse.getStatus(),
                 duration);
     }
