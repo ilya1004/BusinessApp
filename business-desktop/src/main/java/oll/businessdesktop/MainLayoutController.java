@@ -150,6 +150,34 @@ public class MainLayoutController {
         }
     }
 
+    @FXML
+    private void onSimulationTab() {
+        pageTitle.setText("Scenario Simulation");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/simulation-view.fxml"));
+            Pane view = loader.load();
+            contentArea.setCenter(view);
+            BorderPane.setMargin(view, new javafx.geometry.Insets(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Simulation load error: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onMyTasksTab() {
+        pageTitle.setText("My Tasks");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/my-tasks-view.fxml"));
+            Pane view = loader.load();
+            contentArea.setCenter(view);
+            BorderPane.setMargin(view, new javafx.geometry.Insets(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("My Tasks load error: " + e.getMessage());
+        }
+    }
+
     private void loadPlaceholder(String tabName) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/placeholder-view.fxml"));

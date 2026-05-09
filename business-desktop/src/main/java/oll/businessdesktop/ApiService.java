@@ -112,21 +112,24 @@ public class ApiService {
     }
 
     public static User createUser(String username, String password, String role, String firstName, String lastName) throws IOException, InterruptedException {
-        String requestBody = """
-                {"username":"%s","password":"%s","role":"%s","firstName":"%s","lastName":"%s","departmentId":null}
-                """.formatted(
-                escapeJson(username),
-                escapeJson(password),
-                escapeJson(role),
-                escapeJson(firstName),
-                escapeJson(lastName)
-        );
+        return createUser(username, password, role, firstName, lastName, null);
+    }
+
+    public static User createUser(String username, String password, String role, String firstName, String lastName, Long departmentId) throws IOException, InterruptedException {
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "username", username,
+                "password", password,
+                "role", role,
+                "firstName", firstName,
+                "lastName", lastName,
+                "departmentId", departmentId
+        ));
 
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/users"))
                 .header("Authorization", "Bearer " + authToken)
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
 
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
@@ -135,6 +138,30 @@ public class ApiService {
             return objectMapper.readValue(response.body(), User.class);
         } else {
             throw new RuntimeException("Failed to create user: " + response.body());
+        }
+    }
+
+    public static User updateUser(Long userId, String firstName, String lastName, String role, Long departmentId) throws IOException, InterruptedException {
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "firstName", firstName,
+                "lastName", lastName,
+                "role", role,
+                "departmentId", departmentId
+        ));
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/users/" + userId))
+                .header("Authorization", "Bearer " + authToken)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), User.class);
+        } else {
+            throw new RuntimeException("Failed to update user: " + response.body());
         }
     }
 
@@ -421,6 +448,55 @@ public class ApiService {
         }
     }
 
+    public static java.util.List<Task> getMyTasks() throws IOException, InterruptedException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/tasks/my"))
+                .header("Authorization", "Bearer " + authToken)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            var typeRef = new com.fasterxml.jackson.core.type.TypeReference<java.util.List<Task>>() {};
+            return objectMapper.readValue(response.body(), typeRef);
+        } else {
+            throw new RuntimeException("Failed to get my tasks: " + response.body());
+        }
+    }
+
+    public static Task startTask(Long taskId) throws IOException, InterruptedException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/tasks/" + taskId + "/start"))
+                .header("Authorization", "Bearer " + authToken)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Task.class);
+        } else {
+            throw new RuntimeException("Failed to start task: " + response.body());
+        }
+    }
+
+    public static Task completeTask(Long taskId) throws IOException, InterruptedException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/tasks/" + taskId + "/complete"))
+                .header("Authorization", "Bearer " + authToken)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Task.class);
+        } else {
+            throw new RuntimeException("Failed to complete task: " + response.body());
+        }
+    }
+
     public static Task updateTaskStatus(Long taskId, String status) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/process-instances/tasks/" + taskId + "/status?status=" + status))
@@ -434,6 +510,38 @@ public class ApiService {
             return objectMapper.readValue(response.body(), Task.class);
         } else {
             throw new RuntimeException("Failed to update task status: " + response.body());
+        }
+    }
+
+    public static Task assignTask(Long taskId, Long assigneeId) throws IOException, InterruptedException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/tasks/" + taskId + "/assign?assigneeId=" + assigneeId))
+                .header("Authorization", "Bearer " + authToken)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Task.class);
+        } else {
+            throw new RuntimeException("Failed to assign task: " + response.body());
+        }
+    }
+
+    public static Task unassignTask(Long taskId) throws IOException, InterruptedException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/tasks/" + taskId + "/unassign"))
+                .header("Authorization", "Bearer " + authToken)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Task.class);
+        } else {
+            throw new RuntimeException("Failed to unassign task: " + response.body());
         }
     }
 
@@ -538,6 +646,31 @@ public class ApiService {
             return objectMapper.readValue(response.body(), KpiWeights.class);
         } else {
             throw new RuntimeException("Failed to save KPI weights: " + response.body());
+        }
+    }
+
+    public static oll.businessdesktop.model.SimulationResponse runSimulation(Long modelId, double durationMultiplier,
+            int resourcesPerTask, int parallelismFactor) throws IOException, InterruptedException {
+        String body = objectMapper.writeValueAsString(java.util.Map.of(
+                "modelId", modelId,
+                "durationMultiplierX10", (int) Math.round(durationMultiplier * 10),
+                "resourcesPerTask", resourcesPerTask,
+                "parallelismFactor", parallelismFactor
+        ));
+
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/simulations/run"))
+                .header("Authorization", "Bearer " + authToken)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), oll.businessdesktop.model.SimulationResponse.class);
+        } else {
+            throw new RuntimeException("Simulation failed: " + response.body());
         }
     }
 }

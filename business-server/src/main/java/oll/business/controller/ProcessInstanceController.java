@@ -118,13 +118,16 @@ public class ProcessInstanceController {
     public Task updateTaskStatus(@PathVariable Long taskId, @RequestParam String status) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found: " + taskId));
-        task.setStatus(Task.TaskStatus.valueOf(status.toUpperCase()));
-        if (status.equalsIgnoreCase("completed")) {
-            task.setCompletedAt(LocalDateTime.now());
-            task.setActualDuration(task.getPlannedDuration());
+
+        if (task.getStatus() == Task.TaskStatus.COMPLETED) {
+            throw new RuntimeException("Cannot change status of a completed task");
         }
-        Task saved = taskRepository.save(task);
-        kpiService.recalculateModelWeights(task.getInstance().getModel().getId());
-        return saved;
+
+        if (status.equalsIgnoreCase("completed")) {
+            throw new RuntimeException("Use the complete endpoint to mark task as completed");
+        }
+
+        task.setStatus(Task.TaskStatus.valueOf(status.toUpperCase()));
+        return taskRepository.save(task);
     }
 }

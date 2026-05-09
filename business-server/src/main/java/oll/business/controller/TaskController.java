@@ -1,8 +1,12 @@
 package oll.business.controller;
 
 import oll.business.model.Task;
+import oll.business.model.User;
+import oll.business.repository.UserRepository;
 import oll.business.service.TaskService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,14 +16,23 @@ import java.util.List;
 public class TaskController {
 
     private final TaskService taskService;
+    private final UserRepository userRepository;
 
-    public TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService, UserRepository userRepository) {
         this.taskService = taskService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
     public List<Task> findAll() {
         return taskService.findAll();
+    }
+
+    @GetMapping("/my")
+    public List<Task> getMyTasks(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return taskService.findByAssigneeId(user.getId());
     }
 
     @GetMapping("/{id}")
@@ -61,6 +74,11 @@ public class TaskController {
     @PostMapping("/{id}/assign")
     public Task assign(@PathVariable Long id, @RequestParam Long assigneeId) {
         return taskService.assign(id, assigneeId);
+    }
+
+    @PostMapping("/{id}/unassign")
+    public Task unassign(@PathVariable Long id) {
+        return taskService.unassign(id);
     }
 
     @PostMapping("/{id}/start")

@@ -8,5 +8,10 @@ public record User(
     String username,
     String firstName,
     String lastName,
-    String role
-) {}
+    String role,
+    Department department
+) {
+    public String departmentName() {
+        return department != null ? department.name() : "-";
+    }
+}

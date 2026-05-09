@@ -10,6 +10,7 @@ public record Task(
     Long id,
     ProcessInstance instance,
     TaskDefinition taskDefinition,
+    User assignee,
     String status,
     Integer plannedDuration,
     Integer actualDuration,
@@ -23,5 +24,9 @@ public record Task(
 
     public BigDecimal getExpectedCost() {
         return taskDefinition != null ? taskDefinition.expectedCost() : BigDecimal.ZERO;
+    }
+
+    public String getAssigneeName() {
+        return assignee != null ? assignee.firstName() + " " + assignee.lastName() : "-";
     }
 }

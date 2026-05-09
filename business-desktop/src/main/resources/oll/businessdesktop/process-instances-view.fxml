@@ -26,14 +26,17 @@
                 <Label text="Tasks" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                 <TableView fx:id="taskTable" prefHeight="500" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colId" text="Task ID" prefWidth="70"/>
-                        <TableColumn fx:id="colElementId" text="Element ID" prefWidth="150"/>
-                        <TableColumn fx:id="colName" text="Name" prefWidth="200"/>
-                        <TableColumn fx:id="colStatus" text="Status" prefWidth="120"/>
-                        <TableColumn fx:id="colDuration" text="Duration (plan / actual)" prefWidth="160"/>
-                        <TableColumn fx:id="colDeviation" text="Deviation %" prefWidth="100"/>
-                        <TableColumn fx:id="colKpiWeight" text="KPI Weight" prefWidth="100"/>
-                        <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                        <TableColumn fx:id="colElementId" text="Element ID" prefWidth="120"/>
+                        <TableColumn fx:id="colName" text="Name" prefWidth="180"/>
+                        <TableColumn fx:id="colStatus" text="Status" prefWidth="90"/>
+                        <TableColumn fx:id="colAssignee" text="Assignee" prefWidth="140"/>
+                        <TableColumn fx:id="colDuration" text="Duration (plan / actual)" prefWidth="140"/>
+                        <TableColumn fx:id="colStarted" text="Started" prefWidth="140"/>
+                        <TableColumn fx:id="colDueDate" text="Due Date" prefWidth="140"/>
+                        <TableColumn fx:id="colDeviation" text="Deviation %" prefWidth="90"/>
+                        <TableColumn fx:id="colKpiWeight" text="KPI Weight" prefWidth="80"/>
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="160"/>
                     </columns>
                 </TableView>
             </VBox>

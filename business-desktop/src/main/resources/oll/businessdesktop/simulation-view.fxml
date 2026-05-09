@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="oll.businessdesktop.SimulationController">
+    <top>
+        <VBox spacing="10">
+            <padding><Insets top="15" bottom="10" left="15" right="15"/></padding>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Model:" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+                <ComboBox fx:id="modelSelector" prefWidth="300" promptText="Select a process model..."/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ProgressIndicator fx:id="progressIndicator" visible="false" prefWidth="24" prefHeight="24"/>
+                <Button fx:id="runBtn" text="Run Simulation" onAction="#onRunSimulation" disable="true"
+                        style="-fx-background-color: #3B82F6; -fx-text-fill: white; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Duration Multiplier:" style="-fx-font-size: 12px; -fx-min-width: 140;"/>
+                        <Slider fx:id="durationSlider" min="5" max="20" value="10" showTickMarks="true"
+                                showTickLabels="false" majorTickUnit="5" minorTickCount="4"
+                                snapToTicks="true" HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="durationLabel" text="1.0x" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-min-width: 40;"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Resources per Task:" style="-fx-font-size: 12px; -fx-min-width: 140;"/>
+                        <Slider fx:id="resourcesSlider" min="1" max="10" value="1" showTickMarks="true"
+                                showTickLabels="true" majorTickUnit="1" minorTickCount="0"
+                                snapToTicks="true" HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="resourcesLabel" text="1" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-min-width: 40;"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Parallelism Factor:" style="-fx-font-size: 12px; -fx-min-width: 140;"/>
+                        <Slider fx:id="parallelismSlider" min="1" max="10" value="1" showTickMarks="true"
+                                showTickLabels="true" majorTickUnit="1" minorTickCount="0"
+                                snapToTicks="true" HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="parallelismLabel" text="1" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-min-width: 40;"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+
+            <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="AS_NEEDED">
+            <VBox spacing="15" style="-fx-padding: 10;">
+                <VBox fx:id="chartContainer" spacing="8" styleClass="panel-box" visible="false">
+                    <Label text="Comparison: Baseline vs Scenario" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <BarChart fx:id="comparisonChart" prefHeight="300" title="" legendVisible="true" animated="false">
+                        <xAxis>
+                            <CategoryAxis fx:id="chartXAxis" label="Metric"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis fx:id="chartYAxis" label="Value" side="LEFT"/>
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+
+                <VBox fx:id="tableContainer" spacing="8" styleClass="panel-box" visible="false" VBox.vgrow="ALWAYS">
+                    <Label text="Task Predictions" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <TableView fx:id="predictionTable" VBox.vgrow="ALWAYS" minHeight="250">
+                        <columns>
+                            <TableColumn fx:id="colTaskName" text="Task Name" prefWidth="180"/>
+                            <TableColumn fx:id="colBaseDuration" text="Base Duration (min)" prefWidth="130"/>
+                            <TableColumn fx:id="colScenarioDuration" text="Scenario Duration (min)" prefWidth="140"/>
+                            <TableColumn fx:id="colBaseCost" text="Base Cost ($)" prefWidth="110"/>
+                            <TableColumn fx:id="colScenarioCost" text="Scenario Cost ($)" prefWidth="120"/>
+                            <TableColumn fx:id="colResourceLoad" text="Resource Load (%)" prefWidth="130"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

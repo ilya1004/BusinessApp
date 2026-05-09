@@ -102,15 +102,20 @@ public class TaskService {
     public Task assign(Long id, Long assigneeId) {
         Task task = findById(id);
 
-        if (task.getStatus() != Task.TaskStatus.PENDING && task.getStatus() != Task.TaskStatus.ASSIGNED) {
-            throw new RuntimeException("Cannot assign task in status: " + task.getStatus());
-        }
-
         User assignee = userRepository.findById(assigneeId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + assigneeId));
 
         task.setAssignee(assignee);
-        task.setStatus(Task.TaskStatus.ASSIGNED);
+
+        return taskRepository.save(task);
+    }
+
+    @Transactional
+    public Task unassign(Long id) {
+        Task task = findById(id);
+
+        task.setAssignee(null);
+        task.setStatus(Task.TaskStatus.PENDING);
 
         return taskRepository.save(task);
     }
@@ -119,7 +124,7 @@ public class TaskService {
     public Task start(Long id) {
         Task task = findById(id);
 
-        if (task.getStatus() != Task.TaskStatus.ASSIGNED) {
+        if (task.getStatus() != Task.TaskStatus.PENDING && task.getStatus() != Task.TaskStatus.ASSIGNED) {
             throw new RuntimeException("Cannot start task in status: " + task.getStatus());
         }
 
@@ -133,7 +138,7 @@ public class TaskService {
     public Task complete(Long id) {
         Task task = findById(id);
 
-        if (task.getStatus() != Task.TaskStatus.IN_PROGRESS) {
+        if (task.getStatus() == Task.TaskStatus.COMPLETED || task.getStatus() == Task.TaskStatus.CANCELLED) {
             throw new RuntimeException("Cannot complete task in status: " + task.getStatus());
         }
 

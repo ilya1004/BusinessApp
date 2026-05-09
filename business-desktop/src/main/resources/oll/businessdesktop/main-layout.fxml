@@ -18,6 +18,8 @@
             <Button text="Process Designer" onAction="#onProcessDesignerTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Process View" onAction="#onProcessViewTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Process Instances" onAction="#onProcessInstancesTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Simulation" onAction="#onSimulationTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="My Tasks" onAction="#onMyTasksTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Users" onAction="#onUsersTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Organization" onAction="#onDepartmentsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Tab 2" onAction="#onTab2" maxWidth="Infinity" styleClass="sidebar-button"/>

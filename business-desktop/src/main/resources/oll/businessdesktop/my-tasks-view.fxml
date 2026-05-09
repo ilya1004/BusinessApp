@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="oll.businessdesktop.MyTasksController">
+    <top>
+        <VBox spacing="10">
+            <padding><Insets top="15" bottom="10" left="15" right="15"/></padding>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="My Tasks" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ProgressIndicator fx:id="progressIndicator" visible="false" prefWidth="24" prefHeight="24"/>
+                <Button text="Refresh" onAction="#onRefresh" styleClass="btn-primary"/>
+            </HBox>
+            <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <HBox spacing="15" style="-fx-padding: 10;">
+            <VBox spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS" minHeight="400">
+                    <columns>
+                        <TableColumn fx:id="colTaskName" text="Task Name" prefWidth="200"/>
+                        <TableColumn fx:id="colProcessName" text="Process Name" prefWidth="180"/>
+                        <TableColumn fx:id="colDeadline" text="Deadline" prefWidth="150"/>
+                        <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <VBox spacing="15" prefWidth="280">
+                <VBox fx:id="ratingCard" spacing="10" styleClass="card">
+                    <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
+                    <Label text="My Rating" style="-fx-font-size: 13px; -fx-text-fill: -color-fg-muted;"/>
+                    <Label fx:id="ratingLabel" text="-" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: -color-accent-emphasis;"/>
+                    <Label fx:id="weeklyLabel" text="0 completed this week" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;"/>
+                    <Label fx:id="loadLabel" text="Load: -" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;"/>
+                </VBox>
+
+                <VBox fx:id="chartCard" spacing="10" styleClass="card" VBox.vgrow="ALWAYS">
+                    <padding><Insets top="10" bottom="10" left="10" right="10"/></padding>
+                    <Label text="Weekly Activity" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                    <LineChart fx:id="activityChart" prefHeight="200" title="" createSymbols="true" legendVisible="false" animated="false">
+                        <xAxis>
+                            <CategoryAxis fx:id="chartXAxis" label="Day"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis fx:id="chartYAxis" label="Tasks" lowerBound="0" tickUnit="1"/>
+                        </yAxis>
+                    </LineChart>
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>
