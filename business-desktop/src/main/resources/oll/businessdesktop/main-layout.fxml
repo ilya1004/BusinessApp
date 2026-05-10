@@ -23,7 +23,6 @@
             <Button text="Пользователи" onAction="#onUsersTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Организация" onAction="#onDepartmentsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Логи" onAction="#onLogsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="BPMN редактор" onAction="#onBpmnTab" maxWidth="Infinity" styleClass="sidebar-button"/>
         </VBox>
     </left>
     <!-- Content area with top bar -->

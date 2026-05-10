@@ -24,18 +24,13 @@ public class MainLayoutController {
     @FXML
     public void initialize() {
         instance = this;
-        loadProcessDesigner();
+        onProcessDesignerTab();
     }
 
     public static void navigateToInstances(Long instanceId) {
         if (instance != null) {
             instance.onProcessInstancesTab(instanceId);
         }
-    }
-
-    @FXML
-    private void onBpmnTab() {
-        loadProcessDesigner();
     }
 
     @FXML
@@ -89,19 +84,6 @@ public class MainLayoutController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Ошибка загрузки профиля: " + e.getMessage());
-        }
-    }
-
-    private void loadProcessDesigner() {
-        pageTitle.setText("BPMN редактор");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-designer-view.fxml"));
-            Pane view = loader.load();
-            contentArea.setCenter(view);
-            BorderPane.setMargin(view, new javafx.geometry.Insets(0));
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Ошибка загрузки BPMN редактора: " + e.getMessage());
         }
     }
 
