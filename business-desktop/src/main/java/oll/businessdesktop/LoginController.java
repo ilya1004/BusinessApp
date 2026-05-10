@@ -46,22 +46,6 @@ public class LoginController {
         }
     }
 
-    @FXML
-    private void onDevLogin() {
-        ApiService.setAuthToken("dev-token");
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/main-layout.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            Scene scene = new Scene(root, 1280, 800);
-            stage.setScene(scene);
-            stage.setTitle("Business Desktop (DEV)");
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);

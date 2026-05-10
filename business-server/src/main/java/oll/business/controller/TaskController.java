@@ -95,4 +95,9 @@ public class TaskController {
     public Task cancel(@PathVariable Long id) {
         return taskService.cancel(id);
     }
+
+    @PostMapping("/{id}/log-time")
+    public Task logTime(@PathVariable Long id, @RequestParam Integer minutes) {
+        return taskService.logTime(id, minutes);
+    }
 }

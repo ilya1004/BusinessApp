@@ -1,25 +1,21 @@
 package oll.businessdesktop;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import netscape.javascript.JSObject;
 import oll.businessdesktop.model.ProcessModel;
 import oll.businessdesktop.model.TaskDefinition;
 import oll.businessdesktop.model.ProcessInstance;
-import oll.businessdesktop.model.KpiModelData;
-import oll.businessdesktop.model.KpiWeights;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -39,53 +35,53 @@ public class ProcessViewController {
     @FXML private VBox infoContainer;
     @FXML private HBox processInfoRows;
     @FXML private TableView<TaskDefinitionRow> taskTable;
-    @FXML private TableColumn<TaskDefinitionRow, String> colElementId;
+    @FXML private TableColumn<TaskDefinitionRow, Long> colId;
     @FXML private TableColumn<TaskDefinitionRow, String> colName;
     @FXML private TableColumn<TaskDefinitionRow, Integer> colDuration;
     @FXML private TableColumn<TaskDefinitionRow, BigDecimal> colCost;
     @FXML private TableColumn<TaskDefinitionRow, BigDecimal> colKpiWeight;
-    @FXML private Label kpiAvgDurationLabel;
-    @FXML private Label kpiDelayRateLabel;
-    @FXML private Label kpiRatingLabel;
-    @FXML private VBox kpiCardsContainer;
-    @FXML private VBox kpiWeightsContainer;
-    @FXML private Spinner<Double> w1Spinner;
-    @FXML private Spinner<Double> w2Spinner;
-    @FXML private Spinner<Double> w3Spinner;
-    @FXML private Label weightsSumLabel;
+    @FXML private TableColumn<TaskDefinitionRow, Void> colActions;
 
     private WebEngine viewerEngine;
     private boolean viewerReady = false;
     private ProcessModel currentModel;
 
-    private static final Path DIAGRAMS_DIR = Paths.get("saved-diagrams");
+    private static final Path BPMN_DIR = Paths.get("saved-diagrams/bpmn");
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @FXML
     public void initialize() {
         try {
-            Files.createDirectories(DIAGRAMS_DIR);
+                Files.createDirectories(BPMN_DIR);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        colElementId.setCellValueFactory(new PropertyValueFactory<>("elementId"));
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colDuration.setCellValueFactory(new PropertyValueFactory<>("duration"));
         colCost.setCellValueFactory(new PropertyValueFactory<>("cost"));
         colKpiWeight.setCellValueFactory(new PropertyValueFactory<>("kpiWeight"));
 
-        SpinnerValueFactory<Double> svf1 = new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 1.0, 0.34, 0.01);
-        SpinnerValueFactory<Double> svf2 = new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 1.0, 0.33, 0.01);
-        SpinnerValueFactory<Double> svf3 = new SpinnerValueFactory.DoubleSpinnerValueFactory(0.0, 1.0, 0.33, 0.01);
-        w1Spinner.setValueFactory(svf1);
-        w2Spinner.setValueFactory(svf2);
-        w3Spinner.setValueFactory(svf3);
-
-        ChangeListener<Double> weightListener = (obs, old, newVal) -> updateWeightsSum();
-        w1Spinner.valueProperty().addListener(weightListener);
-        w2Spinner.valueProperty().addListener(weightListener);
-        w3Spinner.valueProperty().addListener(weightListener);
+        colActions.setCellFactory(col -> new TableCell<>() {
+            private final Button editBtn = new Button("Edit");
+            {
+                editBtn.getStyleClass().add("table-action-button");
+                editBtn.setOnAction(e -> {
+                    TaskDefinitionRow row = getTableRow().getItem();
+                    if (row != null) openEditDialog(row);
+                });
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(editBtn);
+                }
+            }
+        });
 
         viewerEngine = diagramViewer.getEngine();
         viewerEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
@@ -218,7 +214,7 @@ public class ProcessViewController {
     }
 
     private void showDiagram(ProcessModel model) {
-        Path bpmnFile = DIAGRAMS_DIR.resolve(model.name() + ".bpmn");
+        Path bpmnFile = BPMN_DIR.resolve(model.name() + ".bpmn");
         String xml;
         if (Files.exists(bpmnFile)) {
             try {
@@ -236,7 +232,7 @@ public class ProcessViewController {
         } else {
             xml = model.bpmnXml();
             try {
-                Files.createDirectories(DIAGRAMS_DIR);
+            Files.createDirectories(BPMN_DIR);
                 Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8);
                 statusLabel.setText("Created from DB and saved locally");
             } catch (IOException e) {
@@ -250,7 +246,6 @@ public class ProcessViewController {
 
         showProcessInfo(model);
         showTaskDefinitions(model);
-        loadKpiForModel();
     }
 
     private void showProcessInfo(ProcessModel model) {
@@ -282,124 +277,123 @@ public class ProcessViewController {
     }
 
     public static class TaskDefinitionRow {
-        private final String elementId;
+        private final Long id;
         private final String name;
         private final Integer duration;
         private final BigDecimal cost;
         private final BigDecimal kpiWeight;
 
-        public TaskDefinitionRow(String elementId, String name, Integer duration, BigDecimal cost, BigDecimal kpiWeight) {
-            this.elementId = elementId;
+        public TaskDefinitionRow(Long id, String name, Integer duration, BigDecimal cost, BigDecimal kpiWeight) {
+            this.id = id;
             this.name = name;
             this.duration = duration;
             this.cost = cost;
             this.kpiWeight = kpiWeight;
         }
 
-        public String getElementId() { return elementId; }
+        public Long getId() { return id; }
         public String getName() { return name; }
         public Integer getDuration() { return duration; }
         public BigDecimal getCost() { return cost; }
         public BigDecimal getKpiWeight() { return kpiWeight != null ? kpiWeight : BigDecimal.ZERO; }
     }
 
-    private void updateWeightsSum() {
-        Double w1 = w1Spinner.getValue();
-        Double w2 = w2Spinner.getValue();
-        Double w3 = w3Spinner.getValue();
-        double sum = (w1 != null ? w1 : 0) + (w2 != null ? w2 : 0) + (w3 != null ? w3 : 0);
-        weightsSumLabel.setText(String.format("Sum: %.2f", sum));
-        weightsSumLabel.setStyle(sum > 1.001 || sum < 0.999 ? "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -color-danger-emphasis;" : "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -color-success-emphasis;");
-    }
+    private void openEditDialog(TaskDefinitionRow row) {
+        Dialog<TaskDefinitionRow> dialog = new Dialog<>();
+        dialog.setTitle("Edit Task Definition");
+        dialog.setHeaderText("Editing task #" + row.getId());
 
-    @FXML
-    private void onSaveWeights() {
-        Double w1 = w1Spinner.getValue();
-        Double w2 = w2Spinner.getValue();
-        Double w3 = w3Spinner.getValue();
-        if (w1 == null || w2 == null || w3 == null) return;
+        ButtonType saveBtn = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
 
-        double sum = w1 + w2 + w3;
-        if (sum > 1.001 || sum < 0.999) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("KPI Weights");
-            alert.setHeaderText(null);
-            alert.setContentText("Weights must sum to 1.0. Current sum: " + String.format("%.2f", sum));
-            alert.showAndWait();
-            return;
-        }
+        TextField nameField = new TextField(row.getName());
+        TextField durationField = new TextField(String.valueOf(row.getDuration()));
+        TextField costField = new TextField(row.getCost().toPlainString());
+        TextField kpiField = new TextField(row.getKpiWeight().toPlainString());
 
-        Long modelId = currentModel != null ? currentModel.id() : null;
-        statusLabel.setText("Saving KPI weights...");
-        new Thread(() -> {
-            try {
-                ApiService.saveKpiWeights(modelId,
-                        BigDecimal.valueOf(w1), BigDecimal.valueOf(w2), BigDecimal.valueOf(w3));
-                Platform.runLater(() -> {
-                    statusLabel.setText("KPI weights saved");
-                    loadKpiForModel();
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Failed: " + e.getMessage()));
+        nameField.setPromptText("Name");
+        durationField.setPromptText("Duration (h)");
+        costField.setPromptText("Cost ($)");
+        kpiField.setPromptText("KPI Weight");
+
+        durationField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*") ? c : null));
+        costField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*(\\.\\d{0,2})?") ? c : null));
+        kpiField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*\\.?\\d*") ? c : null));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.add(new Label("Name:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Duration (h):"), 0, 1);
+        grid.add(durationField, 1, 1);
+        grid.add(new Label("Cost ($):"), 0, 2);
+        grid.add(costField, 1, 2);
+        grid.add(new Label("KPI Weight:"), 0, 3);
+        grid.add(kpiField, 1, 3);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == saveBtn) {
+                try {
+                    int durationHours = durationField.getText().isBlank() ? 0 : Integer.parseInt(durationField.getText());
+                    BigDecimal cost = costField.getText().isBlank() ? BigDecimal.ZERO : new BigDecimal(costField.getText());
+                    BigDecimal kpi = kpiField.getText().isBlank() ? BigDecimal.ZERO : new BigDecimal(kpiField.getText());
+                    return new TaskDefinitionRow(
+                            row.getId(),
+                            nameField.getText(),
+                            durationHours,
+                            cost,
+                            kpi
+                    );
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
-        }).start();
-    }
+            return null;
+        });
 
-    private void loadKpiForModel() {
-        if (currentModel == null) return;
-
-        new Thread(() -> {
-            try {
-                KpiModelData kpi = ApiService.getModelKpi(currentModel.id());
-                KpiWeights weights = ApiService.getKpiWeights(currentModel.id());
-
-                Platform.runLater(() -> {
-                    kpiAvgDurationLabel.setText(kpi.avgDuration() + " min");
-                    kpiDelayRateLabel.setText(String.format("%.1f%%", kpi.delayRate() * 100));
-                    kpiRatingLabel.setText(String.format("%.3f", kpi.rating()));
-
-                    w1Spinner.getValueFactory().setValue(weights.w1().doubleValue());
-                    w2Spinner.getValueFactory().setValue(weights.w2().doubleValue());
-                    w3Spinner.getValueFactory().setValue(weights.w3().doubleValue());
-                    updateWeightsSum();
-
-                    kpiCardsContainer.setVisible(true);
-                    kpiWeightsContainer.setVisible(true);
-
-                    showTaskDefinitions(currentModel, kpi);
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    kpiCardsContainer.setVisible(false);
-                    kpiWeightsContainer.setVisible(false);
-                    statusLabel.setText("KPI data not available: " + e.getMessage());
-                });
-            }
-        }).start();
+        dialog.showAndWait().ifPresent(updated -> {
+            statusLabel.setText("Updating task definition...");
+            new Thread(() -> {
+                try {
+                    TaskDefinition result = ApiService.updateTaskDefinition(
+                            updated.getId(),
+                            updated.getName(),
+                            updated.getDuration() * 60,
+                            updated.getCost(),
+                            updated.getKpiWeight()
+                    );
+                    ProcessModel fresh = ApiService.findProcessModelByName(currentModel.name());
+                    Platform.runLater(() -> {
+                        statusLabel.setText("Task definition updated");
+                        if (fresh != null) {
+                            currentModel = fresh;
+                            Path bpmnFile = BPMN_DIR.resolve(currentModel.name() + ".bpmn");
+                            try {
+                                Files.deleteIfExists(bpmnFile);
+                            } catch (IOException ignored) {}
+                            showDiagram(currentModel);
+                        }
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> statusLabel.setText("Failed: " + e.getMessage()));
+                }
+            }).start();
+        });
     }
 
     private void showTaskDefinitions(ProcessModel model) {
-        showTaskDefinitions(model, null);
-    }
-
-    private void showTaskDefinitions(ProcessModel model, KpiModelData kpi) {
         java.util.List<TaskDefinitionRow> rows = new java.util.ArrayList<>();
         if (model.taskDefinitions() != null) {
             for (TaskDefinition td : model.taskDefinitions()) {
-                BigDecimal kpiW = null;
-                if (kpi != null && kpi.tasks() != null) {
-                    for (KpiModelData.KpiTaskData kt : kpi.tasks()) {
-                        if (kt.elementId().equals(td.bpmnElementId())) {
-                            kpiW = kt.kpiWeight();
-                            break;
-                        }
-                    }
-                } else {
-                    kpiW = td.getKpiWeight();
-                }
-                rows.add(new TaskDefinitionRow(td.bpmnElementId(), td.name(), td.defaultDuration(), td.expectedCost(), kpiW));
+                BigDecimal kpiW = td.getKpiWeight();
+                rows.add(new TaskDefinitionRow(td.id(), td.name(), td.defaultDuration() / 60, td.expectedCost(), kpiW));
             }
         }
+        rows.sort(java.util.Comparator.comparing(TaskDefinitionRow::getId));
         taskTable.setItems(FXCollections.observableArrayList(rows));
     }
 }

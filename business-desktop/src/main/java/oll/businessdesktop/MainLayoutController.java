@@ -1,5 +1,9 @@
 package oll.businessdesktop;
 
+import atlantafx.base.theme.CupertinoDark;
+import atlantafx.base.theme.CupertinoLight;
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
@@ -15,6 +19,7 @@ public class MainLayoutController {
     @FXML private javafx.scene.control.Label pageTitle;
 
     private static MainLayoutController instance;
+    private boolean isDarkTheme = false;
 
     @FXML
     public void initialize() {
@@ -176,6 +181,32 @@ public class MainLayoutController {
             e.printStackTrace();
             showAlert("My Tasks load error: " + e.getMessage());
         }
+    }
+
+    @FXML
+    private void onLogsTab() {
+        pageTitle.setText("Server Logs");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/logs-view.fxml"));
+            Pane view = loader.load();
+            contentArea.setCenter(view);
+            BorderPane.setMargin(view, new javafx.geometry.Insets(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Logs load error: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onToggleTheme() {
+        isDarkTheme = !isDarkTheme;
+        Platform.runLater(() -> {
+            if (isDarkTheme) {
+                Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
+            } else {
+                Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+            }
+        });
     }
 
     private void loadPlaceholder(String tabName) {

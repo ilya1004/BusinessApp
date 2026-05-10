@@ -261,6 +261,50 @@
     -fx-background-color: -color-success-muted;
 }
 
+.table-complete-button {
+    -fx-font-size: 11px;
+    -fx-background-color: -color-success-emphasis;
+    -fx-text-fill: -color-fg-on-emphasis;
+    -fx-padding: 3 10 3 10;
+    -fx-background-radius: 3;
+}
+
+.table-complete-button:hover {
+    -fx-background-color: -color-success-muted;
+}
+
+.table-complete-button:disabled {
+    -fx-opacity: 0.4;
+}
+
+.table-cancel-button {
+    -fx-font-size: 11px;
+    -fx-background-color: -color-danger-emphasis;
+    -fx-text-fill: -color-fg-on-emphasis;
+    -fx-padding: 3 10 3 10;
+    -fx-background-radius: 3;
+}
+
+.table-cancel-button:hover {
+    -fx-background-color: -color-danger-muted;
+}
+
+.table-cancel-button:disabled {
+    -fx-opacity: 0.4;
+}
+
+.table-menu-button {
+    -fx-font-size: 11px;
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 3;
+}
+
+.table-menu-button:hover {
+    -fx-background-color: -color-border-default;
+}
+
 /* ===== DEPARTMENT MANAGEMENT STYLES ===== */
 
 .departments-root {
@@ -319,6 +363,14 @@
 }
 
 .card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.stat-card {
     -fx-background-color: -color-bg-subtle;
     -fx-background-radius: 8;
     -fx-border-color: -color-border-default;

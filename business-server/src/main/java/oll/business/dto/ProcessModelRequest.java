@@ -24,6 +24,7 @@ public class ProcessModelRequest {
         private String name;
         private Integer defaultDuration;
         private BigDecimal expectedCost;
+        private BigDecimal kpiWeight;
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -35,5 +36,7 @@ public class ProcessModelRequest {
         public void setDefaultDuration(Integer defaultDuration) { this.defaultDuration = defaultDuration; }
         public BigDecimal getExpectedCost() { return expectedCost; }
         public void setExpectedCost(BigDecimal expectedCost) { this.expectedCost = expectedCost; }
+        public BigDecimal getKpiWeight() { return kpiWeight; }
+        public void setKpiWeight(BigDecimal kpiWeight) { this.kpiWeight = kpiWeight; }
     }
 }

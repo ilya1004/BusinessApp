@@ -16,12 +16,16 @@ import oll.businessdesktop.model.KpiModelData;
 import oll.businessdesktop.model.KpiInstanceData;
 import oll.businessdesktop.model.KpiUserStats;
 import oll.businessdesktop.model.KpiWeights;
+import oll.businessdesktop.model.AppLog;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 
 public class ApiService {
     private static final String BASE_URL = "http://localhost:8080/api";
@@ -364,6 +368,24 @@ public class ApiService {
         }
     }
 
+    public static TaskDefinition updateTaskDefinition(Long id, String name, Integer defaultDuration, BigDecimal expectedCost, BigDecimal kpiWeight) throws IOException, InterruptedException {
+        String body = objectMapper.writeValueAsString(new TaskDefinitionUpdateRequest(name, defaultDuration, expectedCost, kpiWeight));
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/task-definitions/" + id))
+                .header("Authorization", "Bearer " + authToken)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), TaskDefinition.class);
+        } else {
+            throw new RuntimeException("Failed to update task definition: " + response.body());
+        }
+    }
+
+    public record TaskDefinitionUpdateRequest(String name, Integer defaultDuration, BigDecimal expectedCost, BigDecimal kpiWeight) {}
+
     private static String serializeTaskDefinitions(java.util.List<TaskDefinition> taskDefinitions) {
         if (taskDefinitions == null || taskDefinitions.isEmpty()) {
             return "[]";
@@ -441,8 +463,10 @@ public class ApiService {
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == 200) {
+            String body = response.body();
+            System.out.println("[ApiService] getTasksByInstance(" + instanceId + ") response: " + body);
             var typeRef = new com.fasterxml.jackson.core.type.TypeReference<java.util.List<Task>>() {};
-            return objectMapper.readValue(response.body(), typeRef);
+            return objectMapper.readValue(body, typeRef);
         } else {
             throw new RuntimeException("Failed to get tasks: " + response.body());
         }
@@ -494,6 +518,38 @@ public class ApiService {
             return objectMapper.readValue(response.body(), Task.class);
         } else {
             throw new RuntimeException("Failed to complete task: " + response.body());
+        }
+    }
+
+    public static Task cancelTask(Long taskId) throws IOException, InterruptedException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/tasks/" + taskId + "/cancel"))
+                .header("Authorization", "Bearer " + authToken)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Task.class);
+        } else {
+            throw new RuntimeException("Failed to cancel task: " + response.body());
+        }
+    }
+
+    public static Task logTime(Long taskId, int minutes) throws IOException, InterruptedException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/tasks/" + taskId + "/log-time?minutes=" + minutes))
+                .header("Authorization", "Bearer " + authToken)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Task.class);
+        } else {
+            throw new RuntimeException("Failed to log time: " + response.body());
         }
     }
 
@@ -671,6 +727,44 @@ public class ApiService {
             return objectMapper.readValue(response.body(), oll.businessdesktop.model.SimulationResponse.class);
         } else {
             throw new RuntimeException("Simulation failed: " + response.body());
+        }
+    }
+
+    public static List<oll.businessdesktop.model.AppLog> getLogs(int page, int size, String level) throws Exception {
+        String levelParam = (level != null && !level.equals("ALL")) ? "&level=" + level : "";
+        String url = BASE_URL + "/logs?page=" + page + "&size=" + size + levelParam;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + getAuthToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            Map<String, Object> result = objectMapper.readValue(response.body(), Map.class);
+            List<Map<String, Object>> content = (List<Map<String, Object>>) result.get("content");
+            return content.stream()
+                    .map(m -> objectMapper.convertValue(m, oll.businessdesktop.model.AppLog.class))
+                    .toList();
+        } else {
+            throw new RuntimeException("Failed to get logs: " + response.body());
+        }
+    }
+
+    public static List<oll.businessdesktop.model.AppLog> getRecentLogs(int limit) throws Exception {
+        String url = BASE_URL + "/logs/recent?limit=" + limit;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + getAuthToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, oll.businessdesktop.model.AppLog.class));
+        } else {
+            throw new RuntimeException("Failed to get recent logs: " + response.body());
         }
     }
 }

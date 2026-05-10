@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="oll.businessdesktop.LogsController">
+    <top>
+        <VBox spacing="8">
+            <padding><Insets top="15" bottom="10" left="15" right="15"/></padding>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Level:" style="-fx-font-size: 12px;"/>
+                <ComboBox fx:id="levelFilter" prefWidth="100"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Refresh" onAction="#onRefresh" style="-fx-font-size: 12px;"/>
+            </HBox>
+            <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="10" style="-fx-padding: 10;" VBox.vgrow="ALWAYS">
+            <HBox spacing="5" alignment="CENTER_LEFT">
+                <Button text="◀" onAction="#onPreviousPage" style="-fx-font-size: 12px; -fx-padding: 5 10;"/>
+                <Label fx:id="pageLabel" text="Page 0" style="-fx-font-size: 12px;"/>
+                <Button text="▶" onAction="#onNextPage" style="-fx-font-size: 12px; -fx-padding: 5 10;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="totalLabel" text="Total: 0" style="-fx-font-size: 12px;"/>
+            </HBox>
+            <TableView fx:id="logsTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colTimestamp" text="Timestamp" prefWidth="160"/>
+                    <TableColumn fx:id="colLevel" text="Level" prefWidth="80"/>
+                    <TableColumn fx:id="colSource" text="Source" prefWidth="120"/>
+                    <TableColumn fx:id="colAction" text="Action" prefWidth="120"/>
+                    <TableColumn fx:id="colMessage" text="Message" prefWidth="500"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+</BorderPane>

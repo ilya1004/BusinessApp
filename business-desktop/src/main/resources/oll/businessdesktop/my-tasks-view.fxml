@@ -28,10 +28,10 @@
                 <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS" minHeight="400">
                     <columns>
                         <TableColumn fx:id="colTaskName" text="Task Name" prefWidth="200"/>
-                        <TableColumn fx:id="colProcessName" text="Process Name" prefWidth="180"/>
-                        <TableColumn fx:id="colDeadline" text="Deadline" prefWidth="150"/>
-                        <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
-                        <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
+                        <TableColumn fx:id="colProcessName" text="Process Name" prefWidth="150"/>
+                        <TableColumn fx:id="colDuration" text="Duration (actual / plan), h" prefWidth="170"/>
+                        <TableColumn fx:id="colStatus" text="Status" prefWidth="140"/>
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="250"/>
                     </columns>
                 </TableView>
             </VBox>

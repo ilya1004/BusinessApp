@@ -1,6 +1,6 @@
 package oll.businessdesktop;
 
-import atlantafx.base.theme.CupertinoDark;
+import atlantafx.base.theme.CupertinoLight;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -15,7 +15,7 @@ public class BusinessApplication extends Application {
     public void start(Stage primaryStage) {
         try {
             // Apply AtlantaFX theme
-            Platform.runLater(() -> Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet()));
+            Platform.runLater(() -> Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet()));
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/login-view.fxml"));
             Scene scene = new Scene(loader.load(), 400, 500);

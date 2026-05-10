@@ -22,8 +22,7 @@
             <Button text="My Tasks" onAction="#onMyTasksTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Users" onAction="#onUsersTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="Organization" onAction="#onDepartmentsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Tab 2" onAction="#onTab2" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Tab 3" onAction="#onTab3" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Logs" onAction="#onLogsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
             <Button text="BPMN Editor" onAction="#onBpmnTab" maxWidth="Infinity" styleClass="sidebar-button"/>
         </VBox>
     </left>
@@ -36,6 +35,7 @@
                     <HBox spacing="10" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
                         <Label fx:id="pageTitle" text="BPMN Editor" styleClass="page-title"/>
                     </HBox>
+                    <Button text="Light/Dark" onAction="#onToggleTheme" styleClass="profile-button"/>
                     <Button text="Profile" onAction="#onProfileClick" styleClass="profile-button"/>
                 </HBox>
             </top>

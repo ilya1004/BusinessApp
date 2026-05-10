@@ -17,13 +17,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LogService logService;
 
     public UserService(UserRepository userRepository,
                    DepartmentRepository departmentRepository,
-                   PasswordEncoder passwordEncoder) {
+                   PasswordEncoder passwordEncoder,
+                   LogService logService) {
         this.userRepository = userRepository;
         this.departmentRepository = departmentRepository;
         this.passwordEncoder = passwordEncoder;
+        this.logService = logService;
     }
 
     public List<User> findAll() {
@@ -51,6 +54,7 @@ public class UserService {
     @Transactional
     public User create(UserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
+            logService.logWarn("User creation failed: username already exists", "UserService", "create");
             throw new RuntimeException("Username already exists");
         }
 
@@ -67,7 +71,9 @@ public class UserService {
             user.setDepartment(department);
         }
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        logService.logInfo("User created: " + saved.getUsername() + " (id=" + saved.getId() + ", role=" + request.role() + ")", "UserService", "create", saved.getId(), null);
+        return saved;
     }
 
     @Transactional
@@ -89,20 +95,25 @@ public class UserService {
             user.setDepartment(department);
         }
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        logService.logInfo("User updated: id=" + id, "UserService", "update", id, null);
+        return saved;
     }
 
     @Transactional
     public User updatePassword(Long id, String newPassword) {
         User user = findById(id);
         user.setPasswordHash(passwordEncoder.encode(newPassword));
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        logService.logInfo("Password changed for user id=" + id, "UserService", "updatePassword", id, null);
+        return saved;
     }
 
     @Transactional
     public void delete(Long id) {
         User user = findById(id);
         userRepository.delete(user);
+        logService.logInfo("User deleted: " + user.getUsername() + " (id=" + id + ")", "UserService", "delete", id, null);
     }
 
     public record UserRequest(

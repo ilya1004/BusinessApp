@@ -14,10 +14,10 @@ public record TaskDefinition(
     BigDecimal kpiWeight
 ) {
     public TaskDefinition(String bpmnElementId, String name) {
-        this(null, bpmnElementId, name, 0, BigDecimal.ZERO, null);
+        this(null, bpmnElementId, name, 60, BigDecimal.ONE, BigDecimal.ONE);
     }
 
     public BigDecimal getKpiWeight() {
-        return kpiWeight != null ? kpiWeight : BigDecimal.ZERO;
+        return kpiWeight != null ? kpiWeight : BigDecimal.ONE;
     }
 }

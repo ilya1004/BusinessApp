@@ -7,8 +7,7 @@ import oll.business.model.User;
 import oll.business.repository.ProcessModelRepository;
 import oll.business.repository.TaskDefinitionRepository;
 import oll.business.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import oll.business.service.LogService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,18 +18,19 @@ import java.util.*;
 @RequestMapping("/api/process-models")
 public class ProcessModelController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessModelController.class);
-
     private final ProcessModelRepository processModelRepository;
     private final TaskDefinitionRepository taskDefinitionRepository;
     private final UserRepository userRepository;
+    private final LogService logService;
 
     public ProcessModelController(ProcessModelRepository processModelRepository,
                                   TaskDefinitionRepository taskDefinitionRepository,
-                                  UserRepository userRepository) {
+                                  UserRepository userRepository,
+                                  LogService logService) {
         this.processModelRepository = processModelRepository;
         this.taskDefinitionRepository = taskDefinitionRepository;
         this.userRepository = userRepository;
+        this.logService = logService;
     }
 
     @GetMapping
@@ -56,15 +56,9 @@ public class ProcessModelController {
     @PostMapping
     @Transactional
     public ProcessModel create(@RequestBody ProcessModelRequest request) {
-        logger.info("Request name: {}", request.getName());
-        logger.info("Request authorId: {}", request.getAuthorId());
-        logger.info("Request taskDefinitions: {}", request.getTaskDefinitions() != null ? request.getTaskDefinitions().size() : "null");
-        if (request.getTaskDefinitions() != null) {
-            for (ProcessModelRequest.TaskDefinitionRequest td : request.getTaskDefinitions()) {
-                logger.info("  - id={}, bpmnElementId={}, name={}, duration={}, cost={}", td.getId(), td.getBpmnElementId(), td.getName(), td.getDefaultDuration(), td.getExpectedCost());
-            }
-        }
-        
+        logService.logInfo("Creating process model: " + request.getName(), "ProcessModelController", "create", request.getAuthorId(),
+                "taskDefinitions=" + (request.getTaskDefinitions() != null ? request.getTaskDefinitions().size() : 0));
+
         ProcessModel model = new ProcessModel();
         model.setName(request.getName());
         model.setBpmnXml(request.getBpmnXml());
@@ -78,7 +72,9 @@ public class ProcessModelController {
 
         ProcessModel saved = processModelRepository.save(model);
         syncTaskDefinitions(saved, request.getTaskDefinitions());
-        return processModelRepository.findById(saved.getId()).orElse(saved);
+        ProcessModel result = processModelRepository.findById(saved.getId()).orElse(saved);
+        logService.logInfo("Process model created: " + result.getName() + " (id=" + result.getId() + ")", "ProcessModelController", "create");
+        return result;
     }
 
     @PutMapping("/{id:\\d+}")
@@ -97,19 +93,22 @@ public class ProcessModelController {
 
         ProcessModel saved = processModelRepository.save(existing);
         syncTaskDefinitions(saved, request.getTaskDefinitions());
+        logService.logInfo("Process model updated: " + saved.getName() + " (id=" + saved.getId() + ", version=" + saved.getVersion() + ")", "ProcessModelController", "update");
         return saved;
     }
 
     @DeleteMapping("/{id:\\d+}")
     @Transactional
     public void delete(@PathVariable Long id) {
+        ProcessModel model = processModelRepository.findById(id).orElse(null);
+        String name = model != null ? model.getName() : String.valueOf(id);
         taskDefinitionRepository.deleteByModelId(id);
         processModelRepository.deleteById(id);
+        logService.logInfo("Process model deleted: " + name + " (id=" + id + ")", "ProcessModelController", "delete");
     }
 
     @Transactional
     void syncTaskDefinitions(ProcessModel model, List<ProcessModelRequest.TaskDefinitionRequest> requests) {
-        logger.info("syncTaskDefinitions called for model id={}, requests={}", model.getId(), requests != null ? requests.size() : "null");
         if (requests == null || requests.isEmpty()) {
             return;
         }
@@ -136,8 +135,9 @@ public class ProcessModelController {
                 td.setName(req.getName());
                 td.setDefaultDuration(req.getDefaultDuration() != null ? req.getDefaultDuration() : 0);
                 td.setExpectedCost(req.getExpectedCost() != null ? req.getExpectedCost() : BigDecimal.ZERO);
+                td.setKpiWeight(req.getKpiWeight());
                 taskDefinitionRepository.save(td);
-                logger.info("Updated TaskDefinition id={} for element {}", td.getId(), elementId);
+                logService.logInfo("Updated TaskDefinition id=" + td.getId() + " for element " + elementId, "ProcessModelController", "syncTaskDefinitions");
             } else {
                 td = new TaskDefinition();
                 td.setModel(model);
@@ -145,15 +145,16 @@ public class ProcessModelController {
                 td.setName(req.getName());
                 td.setDefaultDuration(req.getDefaultDuration() != null ? req.getDefaultDuration() : 0);
                 td.setExpectedCost(req.getExpectedCost() != null ? req.getExpectedCost() : BigDecimal.ZERO);
+                td.setKpiWeight(req.getKpiWeight());
                 taskDefinitionRepository.save(td);
-                logger.info("Created TaskDefinition for element {}", elementId);
+                logService.logInfo("Created TaskDefinition for element " + elementId, "ProcessModelController", "syncTaskDefinitions");
             }
         }
 
         for (TaskDefinition td : existing) {
             if (!requestMap.containsKey(td.getBpmnElementId())) {
                 taskDefinitionRepository.delete(td);
-                logger.info("Deleted TaskDefinition for removed element {}", td.getBpmnElementId());
+                logService.logInfo("Deleted TaskDefinition for removed element " + td.getBpmnElementId(), "ProcessModelController", "syncTaskDefinitions");
             }
         }
     }

@@ -26,8 +26,7 @@
                 <TableColumn fx:id="lastNameColumn" text="Last Name" prefWidth="120"/>
                 <TableColumn fx:id="departmentColumn" text="Department" prefWidth="150"/>
                 <TableColumn fx:id="roleColumn" text="Role" prefWidth="100"/>
-                <TableColumn fx:id="editColumn" text="Edit" prefWidth="80"/>
-                <TableColumn fx:id="deleteColumn" text="Delete" prefWidth="80"/>
+                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="160"/>
             </columns>
             <columnResizePolicy>
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

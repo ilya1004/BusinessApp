@@ -6,7 +6,7 @@
     <script src="https://unpkg.com/bpmn-js@18/dist/bpmn-viewer.production.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/bpmn-js.css">
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/diagram-js.css">
-    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@18/dist/assets/bpmn-font/css/bpmn.css">
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-font/css/bpmn.css">
     <style>
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: Arial, sans-serif; }
         #canvas { height: 100%; width: 100%; }
@@ -17,21 +17,28 @@
 <div id="canvas"></div>
 <script>
 let bpmnViewer;
+
 document.addEventListener('DOMContentLoaded', function() {
     bpmnViewer = new BpmnJS({ container: '#canvas' });
 });
+
 window.renderDiagram = function(xml) {
     if (!bpmnViewer) return console.error('bpmnViewer not ready');
     bpmnViewer.importXML(xml).then(function() {
         bpmnViewer.get('canvas').zoom('fit-viewport', 'auto');
+        if (window.javaBridge) {
+            window.javaBridge.onDiagramRendered();
+        }
     }).catch(function(err) {
         console.error('renderDiagram failed:', err.message);
     });
 };
+
 window.clearDiagram = function() {
     if (!bpmnViewer) return;
     bpmnViewer.clear();
 };
+
 window.zoomToFit = function(width) {
     if (!bpmnViewer) return;
     try {

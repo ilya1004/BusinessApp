@@ -63,27 +63,6 @@ public class SimulationController {
         colScenarioCost.setCellValueFactory(new PropertyValueFactory<>("scenarioCost"));
         colResourceLoad.setCellValueFactory(new PropertyValueFactory<>("resourceLoad"));
 
-        // Custom TableCell for Resource Load with color coding
-        colResourceLoad.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(Double item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle(null);
-                    return;
-                }
-                setText(String.format("%.1f%%", item));
-                if (item < 70) {
-                    setStyle("-fx-background-color: #dcfce7; -fx-padding: 4 8;");
-                } else if (item <= 90) {
-                    setStyle("-fx-background-color: #fef08a; -fx-padding: 4 8;");
-                } else {
-                    setStyle("-fx-background-color: #fee2e2; -fx-padding: 4 8;");
-                }
-            }
-        });
-
         loadModelList();
     }
 

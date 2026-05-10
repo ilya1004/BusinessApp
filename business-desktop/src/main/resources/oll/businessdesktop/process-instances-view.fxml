@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
 <?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -12,34 +13,61 @@
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Instance:" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
                 <ComboBox fx:id="instanceSelector" prefWidth="350" promptText="Select an instance..."/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Zoom to Fit" onAction="#onZoomToFit" style="-fx-font-size: 12px;"/>
             </HBox>
             <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
         </VBox>
     </top>
     <center>
-        <VBox spacing="15" style="-fx-padding: 10;">
-            <VBox fx:id="infoContainer" spacing="8" styleClass="panel-box">
-                <Label text="Process Instance Information" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
-                <HBox fx:id="processInfoRows" spacing="20"/>
+        <ScrollPane fitToHeight="true" fitToWidth="false" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
+            <VBox spacing="15" style="-fx-padding: 10;">
+                <VBox fx:id="diagramContainer" prefHeight="350" styleClass="panel-box" minHeight="350" maxHeight="350">
+                    <padding><Insets top="8" left="8" bottom="8" right="8"/></padding>
+                    <Label text="Process Diagram" style="-fx-font-size: 14px; -fx-font-weight: bold;">
+                        <VBox.margin><Insets bottom="5"/></VBox.margin>
+                    </Label>
+                    <WebView fx:id="diagramViewer" prefHeight="320" VBox.vgrow="NEVER"/>
+                </VBox>
+                <VBox fx:id="kpiCardsContainer" spacing="10" styleClass="panel-box" visible="false">
+                    <Label text="Instance KPIs" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <HBox spacing="15">
+                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
+                            <Label text="Planned" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                            <Label fx:id="kpiPlannedLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        </VBox>
+                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
+                            <Label text="Actual" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                            <Label fx:id="kpiActualLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        </VBox>
+                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
+                            <Label text="On-Time Rate" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                            <Label fx:id="kpiOnTimeLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        </VBox>
+                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
+                            <Label text="Delay Rate" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                            <Label fx:id="kpiDelayLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                <VBox fx:id="infoContainer" spacing="8" styleClass="panel-box">
+                    <Label text="Process Instance Information" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <HBox fx:id="processInfoRows" spacing="20"/>
+                </VBox>
+                <VBox fx:id="tableContainer" spacing="8" styleClass="panel-box" VBox.vgrow="ALWAYS">
+                    <Label text="Tasks" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <TableView fx:id="taskTable" prefHeight="400" VBox.vgrow="ALWAYS" minHeight="300">
+                        <columns>
+                            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colName" text="Name" prefWidth="150"/>
+                            <TableColumn fx:id="colStatus" text="Status" prefWidth="120"/>
+                            <TableColumn fx:id="colAssignee" text="Assignee" prefWidth="140"/>
+                            <TableColumn fx:id="colDuration" text="Duration (actual / plan), h" prefWidth="200"/>
+                            <TableColumn fx:id="colActions" text="Actions" prefWidth="220"/>
+                        </columns>
+                    </TableView>
+                </VBox>
             </VBox>
-            <VBox fx:id="tableContainer" spacing="8" styleClass="panel-box" VBox.vgrow="ALWAYS">
-                <Label text="Tasks" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
-                <TableView fx:id="taskTable" prefHeight="500" VBox.vgrow="ALWAYS">
-                    <columns>
-                        <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-                        <TableColumn fx:id="colElementId" text="Element ID" prefWidth="120"/>
-                        <TableColumn fx:id="colName" text="Name" prefWidth="180"/>
-                        <TableColumn fx:id="colStatus" text="Status" prefWidth="90"/>
-                        <TableColumn fx:id="colAssignee" text="Assignee" prefWidth="140"/>
-                        <TableColumn fx:id="colDuration" text="Duration (plan / actual)" prefWidth="140"/>
-                        <TableColumn fx:id="colStarted" text="Started" prefWidth="140"/>
-                        <TableColumn fx:id="colDueDate" text="Due Date" prefWidth="140"/>
-                        <TableColumn fx:id="colDeviation" text="Deviation %" prefWidth="90"/>
-                        <TableColumn fx:id="colKpiWeight" text="KPI Weight" prefWidth="80"/>
-                        <TableColumn fx:id="colActions" text="Actions" prefWidth="160"/>
-                    </columns>
-                </TableView>
-            </VBox>
-        </VBox>
+        </ScrollPane>
     </center>
 </BorderPane>

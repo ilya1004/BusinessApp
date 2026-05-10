@@ -22,15 +22,18 @@ public class TaskService {
     private final ProcessInstanceRepository processInstanceRepository;
     private final TaskDefinitionRepository taskDefinitionRepository;
     private final UserRepository userRepository;
+    private final LogService logService;
 
     public TaskService(TaskRepository taskRepository,
                     ProcessInstanceRepository processInstanceRepository,
                     TaskDefinitionRepository taskDefinitionRepository,
-                    UserRepository userRepository) {
+                    UserRepository userRepository,
+                    LogService logService) {
         this.taskRepository = taskRepository;
         this.processInstanceRepository = processInstanceRepository;
         this.taskDefinitionRepository = taskDefinitionRepository;
         this.userRepository = userRepository;
+        this.logService = logService;
     }
 
     public List<Task> findAll() {
@@ -68,7 +71,9 @@ public class TaskService {
         task.setStatus(Task.TaskStatus.PENDING);
         task.setPlannedDuration(taskDef.getDefaultDuration());
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task created: id=" + saved.getId() + " for instance=" + request.instanceId(), "TaskService", "create");
+        return saved;
     }
 
     @Transactional
@@ -89,13 +94,16 @@ public class TaskService {
             task.setPlannedDuration(request.plannedDuration());
         }
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task updated: id=" + id, "TaskService", "update");
+        return saved;
     }
 
     @Transactional
     public void delete(Long id) {
         Task task = findById(id);
         taskRepository.delete(task);
+        logService.logInfo("Task deleted: id=" + id, "TaskService", "delete");
     }
 
     @Transactional
@@ -107,7 +115,9 @@ public class TaskService {
 
         task.setAssignee(assignee);
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task id=" + id + " assigned to user id=" + assigneeId, "TaskService", "assign");
+        return saved;
     }
 
     @Transactional
@@ -117,7 +127,9 @@ public class TaskService {
         task.setAssignee(null);
         task.setStatus(Task.TaskStatus.PENDING);
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task id=" + id + " unassigned", "TaskService", "unassign");
+        return saved;
     }
 
     @Transactional
@@ -125,13 +137,16 @@ public class TaskService {
         Task task = findById(id);
 
         if (task.getStatus() != Task.TaskStatus.PENDING && task.getStatus() != Task.TaskStatus.ASSIGNED) {
+            logService.logWarn("Cannot start task in status: " + task.getStatus(), "TaskService", "start");
             throw new RuntimeException("Cannot start task in status: " + task.getStatus());
         }
 
         task.setStatus(Task.TaskStatus.IN_PROGRESS);
         task.setStartedAt(LocalDateTime.now());
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task id=" + id + " started", "TaskService", "start");
+        return saved;
     }
 
     @Transactional
@@ -139,6 +154,7 @@ public class TaskService {
         Task task = findById(id);
 
         if (task.getStatus() == Task.TaskStatus.COMPLETED || task.getStatus() == Task.TaskStatus.CANCELLED) {
+            logService.logWarn("Cannot complete task in status: " + task.getStatus(), "TaskService", "complete");
             throw new RuntimeException("Cannot complete task in status: " + task.getStatus());
         }
 
@@ -151,7 +167,9 @@ public class TaskService {
             task.setActualDuration((int) durationMinutes);
         }
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task id=" + id + " completed", "TaskService", "complete");
+        return saved;
     }
 
     @Transactional
@@ -159,13 +177,36 @@ public class TaskService {
         Task task = findById(id);
 
         if (task.getStatus() == Task.TaskStatus.COMPLETED || task.getStatus() == Task.TaskStatus.CANCELLED) {
+            logService.logWarn("Cannot cancel task in status: " + task.getStatus(), "TaskService", "cancel");
             throw new RuntimeException("Cannot cancel task in status: " + task.getStatus());
         }
 
         task.setStatus(Task.TaskStatus.CANCELLED);
         task.setCompletedAt(LocalDateTime.now());
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task id=" + id + " cancelled", "TaskService", "cancel");
+        return saved;
+    }
+
+    @Transactional
+    public Task logTime(Long id, Integer actualDurationMinutes) {
+        Task task = findById(id);
+
+        if (actualDurationMinutes == null || actualDurationMinutes < 0) {
+            throw new RuntimeException("Invalid duration: " + actualDurationMinutes);
+        }
+
+        task.setActualDuration(actualDurationMinutes);
+
+        if (task.getStatus() == Task.TaskStatus.PENDING) {
+            task.setStatus(Task.TaskStatus.IN_PROGRESS);
+            task.setStartedAt(LocalDateTime.now());
+        }
+
+        Task saved = taskRepository.save(task);
+        logService.logInfo("Task id=" + id + " time logged: " + actualDurationMinutes + " min", "TaskService", "logTime");
+        return saved;
     }
 
     public record TaskRequest(

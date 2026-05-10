@@ -11,8 +11,7 @@ import oll.business.repository.ProcessModelRepository;
 import oll.business.repository.TaskDefinitionRepository;
 import oll.business.repository.TaskRepository;
 import oll.business.service.KpiService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import oll.business.service.LogService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,24 +23,25 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class ProcessInstanceController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessInstanceController.class);
-
     private final ProcessInstanceRepository processInstanceRepository;
     private final TaskRepository taskRepository;
     private final ProcessModelRepository processModelRepository;
     private final TaskDefinitionRepository taskDefinitionRepository;
     private final KpiService kpiService;
+    private final LogService logService;
 
     public ProcessInstanceController(ProcessInstanceRepository processInstanceRepository,
                                      TaskRepository taskRepository,
                                      ProcessModelRepository processModelRepository,
                                      TaskDefinitionRepository taskDefinitionRepository,
-                                     KpiService kpiService) {
+                                     KpiService kpiService,
+                                     LogService logService) {
         this.processInstanceRepository = processInstanceRepository;
         this.taskRepository = taskRepository;
         this.processModelRepository = processModelRepository;
         this.taskDefinitionRepository = taskDefinitionRepository;
         this.kpiService = kpiService;
+        this.logService = logService;
     }
 
     @GetMapping
@@ -58,7 +58,7 @@ public class ProcessInstanceController {
     @PostMapping
     @Transactional
     public ProcessInstance create(@RequestBody CreateProcessInstanceRequest request) {
-        logger.info("Creating ProcessInstance for model id={}", request.getProcessModelId());
+        logService.logInfo("Creating ProcessInstance for model id=" + request.getProcessModelId(), "ProcessInstanceController", "create");
 
         var model = processModelRepository.findById(request.getProcessModelId())
                 .orElseThrow(() -> new RuntimeException("ProcessModel not found: " + request.getProcessModelId()));
@@ -70,7 +70,6 @@ public class ProcessInstanceController {
         instance.setCurrentState("Started");
 
         ProcessInstance saved = processInstanceRepository.save(instance);
-        logger.info("Created ProcessInstance id={}", saved.getId());
 
         List<TaskDefinition> definitions = taskDefinitionRepository.findByModelId(model.getId());
         for (TaskDefinition def : definitions) {
@@ -82,8 +81,7 @@ public class ProcessInstanceController {
             taskRepository.save(task);
         }
 
-        logger.info("Created {} tasks for instance id={}", definitions.size(), saved.getId());
-
+        logService.logInfo("Created ProcessInstance id=" + saved.getId() + " with " + definitions.size() + " tasks for model " + model.getName(), "ProcessInstanceController", "create");
         return processInstanceRepository.findById(saved.getId()).orElse(saved);
     }
 
@@ -96,7 +94,9 @@ public class ProcessInstanceController {
         if (status.equalsIgnoreCase("completed") || status.equalsIgnoreCase("cancelled")) {
             instance.setFinishedAt(LocalDateTime.now());
         }
-        return processInstanceRepository.save(instance);
+        ProcessInstance saved = processInstanceRepository.save(instance);
+        logService.logInfo("ProcessInstance id=" + id + " status changed to " + status, "ProcessInstanceController", "updateStatus");
+        return saved;
     }
 
     @DeleteMapping("/{id}")
@@ -104,6 +104,7 @@ public class ProcessInstanceController {
     public void delete(@PathVariable Long id) {
         taskRepository.findByInstanceId(id).forEach(taskRepository::delete);
         processInstanceRepository.deleteById(id);
+        logService.logInfo("ProcessInstance deleted: id=" + id, "ProcessInstanceController", "delete");
     }
 
     @GetMapping("/{id}/tasks")

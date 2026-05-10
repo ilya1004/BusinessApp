@@ -2,6 +2,7 @@ package oll.business.controller;
 
 import oll.business.model.Department;
 import oll.business.repository.DepartmentRepository;
+import oll.business.service.LogService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +14,11 @@ import java.util.List;
 public class DepartmentController {
 
     private final DepartmentRepository departmentRepository;
+    private final LogService logService;
 
-    public DepartmentController(DepartmentRepository departmentRepository) {
+    public DepartmentController(DepartmentRepository departmentRepository, LogService logService) {
         this.departmentRepository = departmentRepository;
+        this.logService = logService;
     }
 
     @GetMapping
@@ -37,7 +40,9 @@ public class DepartmentController {
         if (request.parentId() != null) {
             department.setParent(departmentRepository.findById(request.parentId()).orElse(null));
         }
-        return departmentRepository.save(department);
+        Department saved = departmentRepository.save(department);
+        logService.logInfo("Department created: " + saved.getName() + " (id=" + saved.getId() + ")", "DepartmentController", "create");
+        return saved;
     }
 
     @PutMapping("/{id}")
@@ -50,7 +55,9 @@ public class DepartmentController {
         } else {
             department.setParent(null);
         }
-        return departmentRepository.save(department);
+        Department saved = departmentRepository.save(department);
+        logService.logInfo("Department updated: " + saved.getName() + " (id=" + saved.getId() + ")", "DepartmentController", "update");
+        return saved;
     }
 
     @DeleteMapping("/{id}")
@@ -75,6 +82,7 @@ public class DepartmentController {
         }
 
         departmentRepository.delete(department);
+        logService.logInfo("Department deleted: " + department.getName() + " (id=" + id + ")", "DepartmentController", "delete");
         return ResponseEntity.noContent().build();
     }
 

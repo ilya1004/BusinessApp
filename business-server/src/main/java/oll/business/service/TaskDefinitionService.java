@@ -15,11 +15,14 @@ public class TaskDefinitionService {
 
     private final TaskDefinitionRepository taskDefinitionRepository;
     private final ProcessModelRepository processModelRepository;
+    private final LogService logService;
 
     public TaskDefinitionService(TaskDefinitionRepository taskDefinitionRepository,
-                                 ProcessModelRepository processModelRepository) {
+                                 ProcessModelRepository processModelRepository,
+                                 LogService logService) {
         this.taskDefinitionRepository = taskDefinitionRepository;
         this.processModelRepository = processModelRepository;
+        this.logService = logService;
     }
 
     public List<TaskDefinition> findAll() {
@@ -46,7 +49,9 @@ public class TaskDefinitionService {
         task.setDefaultDuration(request.defaultDuration());
         task.setExpectedCost(request.expectedCost());
 
-        return taskDefinitionRepository.save(task);
+        TaskDefinition saved = taskDefinitionRepository.save(task);
+        logService.logInfo("TaskDefinition created: id=" + saved.getId() + ", name=" + request.name(), "TaskDefinitionService", "create");
+        return saved;
     }
 
     @Transactional
@@ -67,20 +72,27 @@ public class TaskDefinitionService {
         if (request.expectedCost() != null) {
             task.setExpectedCost(request.expectedCost());
         }
+        if (request.kpiWeight() != null) {
+            task.setKpiWeight(request.kpiWeight());
+        }
 
-        return taskDefinitionRepository.save(task);
+        TaskDefinition saved = taskDefinitionRepository.save(task);
+        logService.logInfo("TaskDefinition updated: id=" + id, "TaskDefinitionService", "update");
+        return saved;
     }
 
     @Transactional
     public void delete(Long id) {
         TaskDefinition task = findById(id);
         taskDefinitionRepository.delete(task);
+        logService.logInfo("TaskDefinition deleted: id=" + id, "TaskDefinitionService", "delete");
     }
 
     public record TaskDefinitionRequest(
             Long modelId,
             String name,
             Integer defaultDuration,
-            BigDecimal expectedCost
+            BigDecimal expectedCost,
+            BigDecimal kpiWeight
     ) {}
 }

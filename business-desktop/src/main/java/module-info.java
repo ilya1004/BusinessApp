@@ -7,6 +7,7 @@ module oll.businessdesktop {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires java.net.http;
+    requires java.desktop;
 
     opens oll.businessdesktop to javafx.fxml, javafx.web, atlantafx.base;
     opens oll.businessdesktop.model to javafx.fxml, com.fasterxml.jackson.databind;

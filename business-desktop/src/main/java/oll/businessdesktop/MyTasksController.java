@@ -16,17 +16,15 @@ import javafx.scene.layout.VBox;
 import oll.businessdesktop.model.KpiUserStats;
 import oll.businessdesktop.model.Task;
 
-import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 
 public class MyTasksController {
 
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd MMM, HH:mm");
-
     @FXML private TableView<MyTaskRow> tasksTable;
     @FXML private TableColumn<MyTaskRow, String> colTaskName;
     @FXML private TableColumn<MyTaskRow, String> colProcessName;
-    @FXML private TableColumn<MyTaskRow, String> colDeadline;
+    @FXML private TableColumn<MyTaskRow, String> colDuration;
     @FXML private TableColumn<MyTaskRow, Void> colStatus;
     @FXML private TableColumn<MyTaskRow, Void> colActions;
     @FXML private ProgressIndicator progressIndicator;
@@ -44,7 +42,7 @@ public class MyTasksController {
     public void initialize() {
         colTaskName.setCellValueFactory(new PropertyValueFactory<>("taskName"));
         colProcessName.setCellValueFactory(new PropertyValueFactory<>("processName"));
-        colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
+        colDuration.setCellValueFactory(new PropertyValueFactory<>("durationInfo"));
 
         colStatus.setCellFactory(col -> new StatusCell(this));
         colActions.setCellFactory(col -> new ActionCell(this));
@@ -68,7 +66,8 @@ public class MyTasksController {
             showLoading(false);
             List<Task> tasks = fetchTask.getValue();
             if (tasks != null) {
-                List<MyTaskRow> rows = tasks.stream().map(this::toRow).toList();
+                List<MyTaskRow> rows = new java.util.ArrayList<>(tasks.stream().map(this::toRow).toList());
+                rows.sort(Comparator.comparing(MyTaskRow::getId));
                 tasksTable.setItems(FXCollections.observableArrayList(rows));
                 statusLabel.setText(rows.size() + " task(s)");
             }
@@ -101,7 +100,7 @@ public class MyTasksController {
         if (stats == null) return;
 
         double rating = stats.rating() != null ? stats.rating() * 100.0 : 0.0;
-        ratingLabel.setText(String.format("%.0f%%", rating));
+        ratingLabel.setText(String.format("%.0f", rating));
 
         int weekly = stats.weeklyCompleted() != null ? stats.weeklyCompleted() : 0;
         weeklyLabel.setText(weekly + " completed this week");
@@ -127,45 +126,13 @@ public class MyTasksController {
     private MyTaskRow toRow(Task t) {
         String processName = t.instance() != null && t.instance().model() != null ?
                 t.instance().model().name() : "-";
-        String deadline = t.dueDate() != null ? t.dueDate().format(DATE_FMT) : "-";
-        return new MyTaskRow(t.id(), t.getTaskName(), processName, deadline, t.status(), t);
+        int planned = t.plannedDuration() != null ? t.plannedDuration() : 0;
+        int actual = t.actualDuration() != null ? t.actualDuration() : 0;
+        String durationInfo = (actual / 60) + " / " + (planned / 60) + " h";
+        return new MyTaskRow(t.id(), t.getTaskName(), processName, durationInfo, t.status(), t);
     }
 
-    void onChangeStatus(MyTaskRow row) {
-        if (row == null || "COMPLETED".equals(row.getStatus())) return;
-
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Change Status");
-        dialog.setHeaderText("Task: " + row.getTaskName());
-
-        ButtonType applyBtn = new ButtonType("Apply", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().setAll(applyBtn, ButtonType.CANCEL);
-
-        ComboBox<String> statusCombo = new ComboBox<>(FXCollections.observableArrayList(
-                "PENDING", "IN_PROGRESS"
-        ));
-        statusCombo.setValue(row.getStatus());
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-        grid.add(new Label("Status:"), 0, 0);
-        grid.add(statusCombo, 1, 0);
-
-        dialog.getDialogPane().setContent(grid);
-
-        dialog.setResultConverter(btn -> {
-            if (btn == applyBtn) {
-                return statusCombo.getValue();
-            }
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(status -> setTaskStatus(row, status));
-    }
-
-    private void setTaskStatus(MyTaskRow row, String status) {
+    void setTaskStatus(MyTaskRow row, String status) {
         statusLabel.setText("Updating status...");
         showLoading(true);
 
@@ -243,6 +210,78 @@ public class MyTasksController {
         new Thread(completeTask).start();
     }
 
+    void onLogTime(MyTaskRow row) {
+        if (row == null) return;
+
+        Dialog<Integer> dialog = new Dialog<>();
+        dialog.setTitle("Log Time");
+        dialog.setHeaderText("Log worked time for: " + row.getTaskName());
+
+        ButtonType saveBtn = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
+
+        TextField hoursField = new TextField();
+        hoursField.setPromptText("Hours worked");
+
+        int planned = row.getTask().plannedDuration() != null ? row.getTask().plannedDuration() / 60 : 0;
+        hoursField.setText(String.valueOf(planned));
+
+        hoursField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*(\\.\\d?)?" ) ? c : null));
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.add(new Label("Time (h):"), 0, 0);
+        grid.add(hoursField, 1, 0);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == saveBtn) {
+                try {
+                    double hours = Double.parseDouble(hoursField.getText().trim());
+                    return (int) Math.round(hours * 60);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(minutes -> {
+            if (minutes == null) return;
+            statusLabel.setText("Logging time...");
+            showLoading(true);
+
+            javafx.concurrent.Task<Task> logTask = new javafx.concurrent.Task<>() {
+                @Override
+                protected Task call() throws Exception {
+                    return ApiService.logTime(row.getTask().id(), minutes);
+                }
+            };
+
+            logTask.setOnSucceeded(e -> {
+                showLoading(false);
+                Task updated = logTask.getValue();
+                if (updated != null) {
+                    int idx = tasksTable.getItems().indexOf(row);
+                    if (idx >= 0) {
+                        tasksTable.getItems().set(idx, toRow(updated));
+                    }
+                    statusLabel.setText("Time logged (" + (minutes / 60) + " h)");
+                }
+            });
+
+            logTask.setOnFailed(e -> {
+                showLoading(false);
+                showError("Failed to log time: " + logTask.getException().getMessage());
+            });
+
+            new Thread(logTask).start();
+        });
+    }
+
     @FXML
     private void onRefresh() {
         loadMyTasks();
@@ -265,15 +304,15 @@ public class MyTasksController {
         private final Long id;
         private final String taskName;
         private final String processName;
-        private final String deadline;
+        private final String durationInfo;
         private final String status;
         private final Task task;
 
-        public MyTaskRow(Long id, String taskName, String processName, String deadline, String status, Task task) {
+        public MyTaskRow(Long id, String taskName, String processName, String durationInfo, String status, Task task) {
             this.id = id;
             this.taskName = taskName;
             this.processName = processName;
-            this.deadline = deadline;
+            this.durationInfo = durationInfo;
             this.status = status;
             this.task = task;
         }
@@ -281,23 +320,27 @@ public class MyTasksController {
         public Long getId() { return id; }
         public String getTaskName() { return taskName; }
         public String getProcessName() { return processName; }
-        public String getDeadline() { return deadline; }
+        public String getDurationInfo() { return durationInfo; }
         public String getStatus() { return status; }
         public Task getTask() { return task; }
     }
 
     private static class StatusCell extends TableCell<MyTaskRow, Void> {
-        private final HBox box = new HBox(6);
-        private final Label badge = new Label();
-        private final Button changeBtn = new Button("Change");
+        private final ComboBox<String> combo = new ComboBox<>();
         private final MyTasksController controller;
+        private MyTaskRow currentRow;
 
         StatusCell(MyTasksController controller) {
             this.controller = controller;
-            badge.setStyle("-fx-padding: 3 8; -fx-background-radius: 4;");
-            changeBtn.getStyleClass().add("btn-primary");
-            changeBtn.setOnAction(e -> controller.onChangeStatus(getTableRow().getItem()));
-            box.getChildren().addAll(badge, changeBtn);
+            combo.getItems().addAll("ASSIGNED", "IN_PROGRESS");
+            combo.setOnAction(e -> {
+                if (currentRow == null) return;
+                String newStatus = combo.getValue();
+                if (newStatus != null && !newStatus.equals(currentRow.getStatus())) {
+                    controller.setTaskStatus(currentRow, newStatus);
+                }
+            });
+            combo.setStyle("-fx-background-radius: 4; -fx-padding: 2 4;");
         }
 
         @Override
@@ -305,35 +348,47 @@ public class MyTasksController {
             super.updateItem(item, empty);
             if (empty || getTableRow().getItem() == null) {
                 setGraphic(null);
+                currentRow = null;
                 return;
             }
-            String status = getTableRow().getItem().getStatus();
-            badge.setText(status);
-            badge.setStyle("-fx-background-color: " + getStatusColor(status) + "; -fx-background-radius: 4; -fx-padding: 3 8;");
-            changeBtn.setVisible(!"COMPLETED".equals(status));
-            changeBtn.setDisable("COMPLETED".equals(status));
-            setGraphic(box);
+            MyTaskRow row = getTableRow().getItem();
+            currentRow = row;
+            String status = row.getStatus();
+
+            if ("COMPLETED".equals(status) || "CANCELLED".equals(status)) {
+                Label badge = new Label(status);
+                badge.setStyle("-fx-background-color: " + getStatusColor(status) + "; -fx-background-radius: 4; -fx-padding: 3 8;");
+                setGraphic(badge);
+            } else {
+                combo.setValue(status);
+                setGraphic(combo);
+            }
         }
 
         private String getStatusColor(String status) {
-            switch (status) {
-                case "PENDING": return "-color-bg-subtle";
-                case "IN_PROGRESS": return "-color-attention-muted";
-                case "COMPLETED": return "-color-success-muted";
-                case "OVERDUE": case "FAILED": return "-color-danger-muted";
-                default: return "-color-bg-subtle";
-            }
+            return switch (status) {
+                case "PENDING" -> "#f0f0f0";
+                case "IN_PROGRESS" -> "#fef3c7";
+                case "COMPLETED" -> "#d1fae5";
+                case "OVERDUE", "FAILED" -> "#fee2e2";
+                default -> "#f0f0f0";
+            };
         }
     }
 
     private static class ActionCell extends TableCell<MyTaskRow, Void> {
+        private final HBox box = new HBox(6);
+        private final Button logTimeBtn = new Button("Log Time");
         private final Button completeBtn = new Button("Complete");
         private final MyTasksController controller;
 
         ActionCell(MyTasksController controller) {
             this.controller = controller;
+            logTimeBtn.getStyleClass().add("btn-primary");
+            logTimeBtn.setOnAction(e -> controller.onLogTime(getTableRow().getItem()));
             completeBtn.getStyleClass().add("btn-primary");
             completeBtn.setOnAction(e -> controller.onCompleteTask(getTableRow().getItem()));
+            box.getChildren().addAll(logTimeBtn, completeBtn);
         }
 
         @Override
@@ -344,8 +399,9 @@ public class MyTasksController {
                 return;
             }
             String status = getTableRow().getItem().getStatus();
-            completeBtn.setDisable("COMPLETED".equals(status));
-            setGraphic(completeBtn);
+            boolean completed = "COMPLETED".equals(status);
+            completeBtn.setDisable(completed);
+            setGraphic(box);
         }
     }
 }

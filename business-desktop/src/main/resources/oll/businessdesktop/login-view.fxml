@@ -28,8 +28,7 @@
 
         <Button text="Sign In" onAction="#onLogin" styleClass="login-button" maxWidth="Infinity"/>
 
-        <Button text="Sign In without auth (DEV)" onAction="#onDevLogin" styleClass="dev-login-button" maxWidth="Infinity"/>
-
+        
         <Label fx:id="errorLabel" text="" styleClass="error-label" visible="false"/>
     </VBox>
 </StackPane>

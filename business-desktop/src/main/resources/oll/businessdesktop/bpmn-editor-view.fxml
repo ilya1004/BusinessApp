@@ -10,10 +10,12 @@
     <top>
         <ToolBar fx:id="toolBar">
             <Button text="New Diagram" onAction="#onNewDiagram"/>
-            <Button text="Open .bpmn" onAction="#onOpenFile"/>
             <Button text="Save XML" onAction="#onSaveXML"/>
             <Separator/>
+            <Button text="Open .bpmn" onAction="#onOpenFile"/>
+            <Separator/>
             <Button text="Export SVG" onAction="#onExportSVG"/>
+            <Button text="Open SVG Folder" onAction="#onOpenSvgFolder"/>
         </ToolBar>
     </top>
     <center>

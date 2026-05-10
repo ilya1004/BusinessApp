@@ -21,6 +21,7 @@ import oll.businessdesktop.model.ProcessModel;
 import oll.businessdesktop.model.TaskDefinition;
 import oll.businessdesktop.model.User;
 
+import java.awt.Desktop;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +49,9 @@ public class ProcessDesignerController {
     private TextField currentNameField;
     private TextField currentDurationField;
     private TextField currentCostField;
-    private static final Path DIAGRAMS_DIR = Paths.get("saved-diagrams");
+    private TextField currentKpiWeightField;
+    private static final Path BPMN_DIR = Paths.get("saved-diagrams/bpmn");
+    private static final Path SVG_DIR = Paths.get("saved-diagrams/svg");
     private static final Path LOG_DIR = Paths.get("js-logs");
     private static final Path LOG_FILE = LOG_DIR.resolve("console.log");
     private static final DateTimeFormatter TIMESTAMP_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
@@ -58,7 +61,8 @@ public class ProcessDesignerController {
     @FXML
     public void initialize() {
         try {
-            Files.createDirectories(DIAGRAMS_DIR);
+            Files.createDirectories(BPMN_DIR);
+            Files.createDirectories(SVG_DIR);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -158,7 +162,7 @@ public class ProcessDesignerController {
                             }
                         }
 
-                        Path bpmnFile = DIAGRAMS_DIR.resolve(currentDiagramName + ".bpmn");
+                        Path bpmnFile = BPMN_DIR.resolve(currentDiagramName + ".bpmn");
                         String xml;
                         if (Files.exists(bpmnFile)) {
                             try {
@@ -176,7 +180,7 @@ public class ProcessDesignerController {
                         } else {
                             xml = selected.bpmnXml();
                             try {
-                                Files.createDirectories(DIAGRAMS_DIR);
+                                Files.createDirectories(BPMN_DIR);
                                 Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8);
                                 lastSavedLabel.setText("Created from DB and saved locally");
                             } catch (IOException e) {
@@ -210,7 +214,7 @@ public class ProcessDesignerController {
     private void onOpenFile() {
         Stage stage = (Stage) webView.getScene().getWindow();
         FileChooser chooser = new FileChooser();
-        chooser.setInitialDirectory(DIAGRAMS_DIR.toFile());
+        chooser.setInitialDirectory(BPMN_DIR.toFile());
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BPMN Files", "*.bpmn", "*.xml"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
@@ -265,6 +269,18 @@ public class ProcessDesignerController {
         safeExecScript("exportSVG();");
     }
 
+    @FXML
+    private void onOpenSvgFolder() {
+        try {
+            Files.createDirectories(SVG_DIR);
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(SVG_DIR.toFile());
+            }
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Could not open folder: " + e.getMessage());
+        }
+    }
+
     void handleXMLSaved(String xml) {
         List<TaskDefinition> taskList = new ArrayList<>(taskDefinitions.values());
         System.out.println("[SAVE] Preparing to save " + taskList.size() + " TaskDefinitions");
@@ -311,7 +327,7 @@ public class ProcessDesignerController {
 
                 Platform.runLater(() -> {
                     String fileName = currentDiagramName + ".bpmn";
-                    Path target = DIAGRAMS_DIR.resolve(fileName);
+                    Path target = BPMN_DIR.resolve(fileName);
                     try {
                         Files.writeString(target, xml, StandardCharsets.UTF_8);
                     } catch (IOException ex) {
@@ -330,10 +346,13 @@ public class ProcessDesignerController {
 
     void handleSVGExported(String svg) {
         String fileName = (currentDiagramName != null ? currentDiagramName : LocalDateTime.now().format(TIMESTAMP_FMT)) + ".svg";
-        Path target = DIAGRAMS_DIR.resolve(fileName);
+        Path target = SVG_DIR.resolve(fileName);
         try {
             Files.writeString(target, svg, StandardCharsets.UTF_8);
             Platform.runLater(() -> lastSavedLabel.setText("SVG exported: " + fileName));
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(target.toFile());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -408,41 +427,61 @@ public class ProcessDesignerController {
                     safeExecScript("updateElementName('" + selectedElementId + "', '" + newVal.replace("'", "\\'") + "');");
                 });
 
-                currentDurationField = new TextField(String.valueOf(td.defaultDuration()));
-                currentDurationField.setPromptText("Duration");
+                currentDurationField = new TextField(String.valueOf(td.defaultDuration() / 60));
+                currentDurationField.setPromptText("Duration (hours)");
                 currentDurationField.setTextFormatter(new TextFormatter<>(change -> {
                     if (change.getControlNewText().matches("\\d*")) {
                         return change;
                     }
                     return null;
                 }));
-                addEditableRow("Duration", currentDurationField);
+                addEditableRow("Duration (h)", currentDurationField);
                 currentDurationField.textProperty().addListener((obs, old, newVal) -> {
                     try {
-                        int duration = newVal.isBlank() ? 0 : Integer.parseInt(newVal);
+                        int hours = newVal.isBlank() ? 0 : Integer.parseInt(newVal);
                         TaskDefinition current = taskDefinitions.get(selectedElementId);
                         if (current != null) {
-                            TaskDefinition updated = new TaskDefinition(current.id(), current.bpmnElementId(), current.name(), duration, current.expectedCost(), current.kpiWeight());
+                            TaskDefinition updated = new TaskDefinition(current.id(), current.bpmnElementId(), current.name(), hours * 60, current.expectedCost(), current.kpiWeight());
                             taskDefinitions.put(selectedElementId, updated);
                         }
                     } catch (NumberFormatException e) {}
                 });
 
                 currentCostField = new TextField(td.expectedCost().toPlainString());
-                currentCostField.setPromptText("Cost");
+                currentCostField.setPromptText("0.00");
                 currentCostField.setTextFormatter(new TextFormatter<>(change -> {
                     if (change.getControlNewText().matches("\\d*(\\.\\d{0,2})?")) {
                         return change;
                     }
                     return null;
                 }));
-                addEditableRow("Cost ($)", currentCostField);
+                addCostRow(currentCostField);
                 currentCostField.textProperty().addListener((obs, old, newVal) -> {
                     try {
                         BigDecimal cost = newVal.isBlank() ? BigDecimal.ZERO : new BigDecimal(newVal);
                         TaskDefinition current = taskDefinitions.get(selectedElementId);
                         if (current != null) {
                             TaskDefinition updated = new TaskDefinition(current.id(), current.bpmnElementId(), current.name(), current.defaultDuration(), cost, current.kpiWeight());
+                            taskDefinitions.put(selectedElementId, updated);
+                        }
+                    } catch (NumberFormatException e) {}
+                });
+
+                currentKpiWeightField = new TextField(td.getKpiWeight().toPlainString());
+                currentKpiWeightField.setPromptText("0.00");
+                currentKpiWeightField.setTextFormatter(new TextFormatter<>(change -> {
+                    if (change.getControlNewText().matches("\\d*\\.?\\d*")) {
+                        return change;
+                    }
+                    return null;
+                }));
+                addKpiWeightRow(currentKpiWeightField);
+                currentKpiWeightField.textProperty().addListener((obs, old, newVal) -> {
+                    try {
+                        BigDecimal weight = newVal.isBlank() ? BigDecimal.ZERO : new BigDecimal(newVal);
+                        TaskDefinition current = taskDefinitions.get(selectedElementId);
+                        if (current != null) {
+                            TaskDefinition updated = new TaskDefinition(current.id(), current.bpmnElementId(), current.name(), current.defaultDuration(), current.expectedCost(), weight);
                             taskDefinitions.put(selectedElementId, updated);
                         }
                     } catch (NumberFormatException e) {}
@@ -457,7 +496,7 @@ public class ProcessDesignerController {
         HBox row = new HBox();
         row.setSpacing(8);
         Label keyLabel = new Label(label + ":");
-        keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 70;");
+        keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
         Label valueLabel = new Label(value);
         valueLabel.setStyle("-fx-text-fill: -color-fg-muted;");
         row.getChildren().addAll(keyLabel, valueLabel);
@@ -468,8 +507,29 @@ public class ProcessDesignerController {
         HBox row = new HBox();
         row.setSpacing(8);
         Label keyLabel = new Label(label + ":");
-        keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 70;");
+        keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
         HBox.setHgrow(field, Priority.ALWAYS);
+        row.getChildren().addAll(keyLabel, field);
+        propertiesContainer.getChildren().add(row);
+    }
+
+    private void addCostRow(TextField field) {
+        HBox row = new HBox();
+        row.setSpacing(8);
+        Label keyLabel = new Label("Cost ($):");
+        keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
+        HBox.setHgrow(field, Priority.ALWAYS);
+        row.getChildren().addAll(keyLabel, field);
+        propertiesContainer.getChildren().add(row);
+    }
+
+    private void addKpiWeightRow(TextField field) {
+        HBox row = new HBox();
+        row.setSpacing(8);
+        Label keyLabel = new Label("KPI Weight:");
+        keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
+        HBox.setHgrow(field, Priority.ALWAYS);
+        field.setStyle("-fx-text-fill: -color-accent-emphasis; -fx-font-weight: bold;");
         row.getChildren().addAll(keyLabel, field);
         propertiesContainer.getChildren().add(row);
     }

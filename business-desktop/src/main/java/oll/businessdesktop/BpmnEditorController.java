@@ -9,6 +9,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
+import java.awt.Desktop;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -23,6 +24,8 @@ public class BpmnEditorController {
 
     private WebEngine engine;
     private JavaBridge bridge;
+    private static final Path BPMN_DIR = Paths.get("saved-diagrams/bpmn");
+    private static final Path SVG_DIR = Paths.get("saved-diagrams/svg");
     private static final Path LOG_DIR = Paths.get("js-logs");
     private static final Path LOG_FILE = LOG_DIR.resolve("console.log");
 
@@ -97,6 +100,18 @@ public class BpmnEditorController {
         }
     }
 
+    @FXML
+    private void onOpenSvgFolder() {
+        try {
+            Files.createDirectories(SVG_DIR);
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(SVG_DIR.toFile());
+            }
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Could not open folder: " + e.getMessage());
+        }
+    }
+
     private void safeExecScript(String script) {
         try {
             engine.executeScript(script);
@@ -161,8 +176,12 @@ public class BpmnEditorController {
 
         public void onSVGExported(String svg) {
             writeLog("JAVA", "SVG exported (" + svg.length() + " chars)");
-            try (FileWriter fw = new FileWriter("diagram.svg", StandardCharsets.UTF_8)) {
-                fw.write(svg);
+            Path target = Paths.get("diagram.svg");
+            try {
+                Files.writeString(target, svg, StandardCharsets.UTF_8);
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(target.toFile());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -8,8 +8,8 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import oll.businessdesktop.model.KpiUserStats;
 import oll.businessdesktop.model.User;
@@ -18,11 +18,15 @@ import java.io.IOException;
 
 public class ProfileController {
 
-    @FXML private Label usernameLabel;
+    @FXML private Circle avatarCircle;
+    @FXML private Label avatarLabel;
     @FXML private Label nameLabel;
     @FXML private Label roleLabel;
+    @FXML private Label usernameLabel;
+    @FXML private Label deptLabel;
+    @FXML private Label ratingValLabel;
+    @FXML private Label weeklyValLabel;
     @FXML private VBox statsContainer;
-    @FXML private HBox statsRows;
     @FXML private VBox chartContainer;
     @FXML private LineChart<String, Number> ratingChart;
 
@@ -56,9 +60,18 @@ public class ProfileController {
     private void loadUserProfile() {
         try {
             User user = ApiService.getCurrentUser();
-            usernameLabel.setText("Username: " + user.username());
-            nameLabel.setText("Name: " + user.firstName() + " " + user.lastName());
-            roleLabel.setText("Role: " + user.role());
+            String initials = (user.firstName() != null && !user.firstName().isEmpty()
+                    ? user.firstName().substring(0, 1).toUpperCase() : "")
+                    + (user.lastName() != null && !user.lastName().isEmpty()
+                    ? user.lastName().substring(0, 1).toUpperCase() : "");
+            if (initials.isEmpty()) {
+                initials = user.username() != null ? user.username().substring(0, 1).toUpperCase() : "?";
+            }
+            avatarLabel.setText(initials);
+            nameLabel.setText(user.firstName() + " " + user.lastName());
+            roleLabel.setText(user.role());
+            usernameLabel.setText("@" + user.username());
+            deptLabel.setText(user.departmentName());
 
             loadUserKpi();
         } catch (Exception e) {
@@ -82,18 +95,15 @@ public class ProfileController {
     }
 
     private void updateUserKpi(KpiUserStats stats) {
-        statsRows.getChildren().clear();
-
-        addStatCard("Rating", String.format("%.3f", stats.rating() != null ? stats.rating() : 0.0));
-        addStatCard("Weekly Completed", String.valueOf(stats.weeklyCompleted() != null ? stats.weeklyCompleted() : 0));
-        addStatCard("Load", String.format("%.1f%%", stats.loadPercent() != null ? stats.loadPercent() : 0.0));
+        ratingValLabel.setText(String.valueOf(stats.rating() != null ? (int) Math.round(stats.rating() * 100) : 0));
+        weeklyValLabel.setText(String.valueOf(stats.weeklyCompleted() != null ? stats.weeklyCompleted() : 0));
 
         statsContainer.setVisible(true);
 
         if (stats.ratingHistory() != null && !stats.ratingHistory().isEmpty()) {
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             for (KpiUserStats.RatingHistoryPoint point : stats.ratingHistory()) {
-                series.getData().add(new XYChart.Data<>(point.date(), point.rating() != null ? point.rating() : 0.0));
+                series.getData().add(new XYChart.Data<>(point.date(), point.rating() != null ? point.rating() * 100.0 : 0.0));
             }
             ratingChart.getData().clear();
             ratingChart.getData().add(series);
@@ -101,21 +111,6 @@ public class ProfileController {
         } else {
             chartContainer.setVisible(false);
         }
-    }
-
-    private void addStatCard(String label, String value) {
-        VBox card = new VBox();
-        card.setSpacing(4);
-        card.setStyle("-fx-background-color: -color-bg-subtle; -fx-background-radius: 8; -fx-padding: 12; -fx-min-width: 140;");
-
-        Label keyLabel = new Label(label);
-        keyLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;");
-
-        Label valLabel = new Label(value);
-        valLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-        card.getChildren().addAll(keyLabel, valLabel);
-        statsRows.getChildren().add(card);
     }
 
     private void showAlert(String message) {

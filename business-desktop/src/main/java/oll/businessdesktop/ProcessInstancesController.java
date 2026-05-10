@@ -2,6 +2,7 @@ package oll.businessdesktop;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -9,15 +10,19 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.GridPane;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import oll.businessdesktop.model.ProcessInstance;
+import oll.businessdesktop.model.KpiInstanceData;
 import oll.businessdesktop.model.Task;
 import oll.businessdesktop.model.User;
-import oll.businessdesktop.model.KpiInstanceData;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
+import java.util.Objects;
 
 public class ProcessInstancesController {
 
@@ -27,47 +32,86 @@ public class ProcessInstancesController {
     @FXML private Label statusLabel;
     @FXML private VBox infoContainer;
     @FXML private HBox processInfoRows;
+    @FXML private WebView diagramViewer;
+    @FXML private VBox kpiCardsContainer;
+    @FXML private Label kpiPlannedLabel;
+    @FXML private Label kpiActualLabel;
+    @FXML private Label kpiOnTimeLabel;
+    @FXML private Label kpiDelayLabel;
     @FXML private TableView<TaskRow> taskTable;
     @FXML private TableColumn<TaskRow, Long> colId;
-    @FXML private TableColumn<TaskRow, String> colElementId;
     @FXML private TableColumn<TaskRow, String> colName;
-    @FXML private TableColumn<TaskRow, String> colStatus;
+    @FXML private TableColumn<TaskRow, Void> colStatus;
     @FXML private TableColumn<TaskRow, String> colAssignee;
     @FXML private TableColumn<TaskRow, String> colDuration;
-    @FXML private TableColumn<TaskRow, Double> colDeviation;
-    @FXML private TableColumn<TaskRow, String> colKpiWeight;
-    @FXML private TableColumn<TaskRow, String> colStarted;
-    @FXML private TableColumn<TaskRow, String> colDueDate;
     @FXML private TableColumn<TaskRow, Void> colActions;
 
     private List<ProcessInstance> allInstances;
     private ProcessInstance currentInstance;
     private List<User> allUsers = new ArrayList<>();
+    private List<Task> currentTasks = new ArrayList<>();
+
+    private WebEngine viewerEngine;
+    private boolean viewerReady = false;
+    private String currentBpmnXml;
 
     @FXML
     public void initialize() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colElementId.setCellValueFactory(new PropertyValueFactory<>("elementId"));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        colStatus.setCellFactory(col -> new TableCell<>() {
+            private final Label badge = new Label();
+            {
+                badge.setStyle("-fx-padding: 3 8; -fx-background-radius: 4;");
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                    return;
+                }
+                String status = getTableRow().getItem().getStatus();
+                badge.setText(status);
+                badge.setStyle(getStatusStyle(status));
+                setGraphic(badge);
+            }
+            private String getStatusStyle(String status) {
+                return switch (status) {
+                    case "PENDING" -> "-fx-background-color: #f0f0f0; -fx-background-radius: 4; -fx-padding: 3 8;";
+                    case "ASSIGNED" -> "-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-background-radius: 4; -fx-padding: 3 8;";
+                    case "IN_PROGRESS" -> "-fx-background-color: #fef3c7; -fx-background-radius: 4; -fx-padding: 3 8;";
+                    case "COMPLETED" -> "-fx-background-color: #d1fae5; -fx-background-radius: 4; -fx-padding: 3 8;";
+                    case "CANCELLED" -> "-fx-background-color: #e5e7eb; -fx-text-fill: #6b7280; -fx-background-radius: 4; -fx-padding: 3 8;";
+                    case "OVERDUE" -> "-fx-background-color: #fee2e2; -fx-background-radius: 4; -fx-padding: 3 8;";
+                    default -> "-fx-background-color: #f0f0f0; -fx-background-radius: 4; -fx-padding: 3 8;";
+                };
+            }
+        });
         colAssignee.setCellValueFactory(new PropertyValueFactory<>("assigneeName"));
         colDuration.setCellValueFactory(new PropertyValueFactory<>("durationInfo"));
-        colStarted.setCellValueFactory(new PropertyValueFactory<>("startedAt"));
-        colDueDate.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
-        colDeviation.setCellValueFactory(new PropertyValueFactory<>("deviationPercent"));
-        colKpiWeight.setCellValueFactory(new PropertyValueFactory<>("kpiWeight"));
 
         colActions.setCellFactory(col -> new TableCell<>() {
-            private final HBox actionBox = new HBox(4);
+            private final HBox actionBox = new HBox(6);
             private final Button changeStatusBtn = new Button("Status");
             private final Button assignBtn = new Button("Assign");
+            private final MenuButton moreBtn = new MenuButton("...");
+            private final MenuItem completeItem = new MenuItem("Complete");
+            private final MenuItem cancelItem = new MenuItem("Cancel");
 
             {
                 changeStatusBtn.getStyleClass().add("table-action-button");
                 assignBtn.getStyleClass().add("table-assign-button");
+                moreBtn.getStyleClass().add("table-menu-button");
+
+                completeItem.setOnAction(e -> onCompleteTask(getTableRow().getItem()));
+                cancelItem.setOnAction(e -> onCancelTask(getTableRow().getItem()));
+                moreBtn.getItems().addAll(completeItem, cancelItem);
+
                 changeStatusBtn.setOnAction(e -> openStatusDialog(getTableRow().getItem()));
                 assignBtn.setOnAction(e -> openAssignDialog(getTableRow().getItem()));
-                actionBox.getChildren().addAll(changeStatusBtn, assignBtn);
+
+                actionBox.getChildren().addAll(changeStatusBtn, assignBtn, moreBtn);
             }
 
             @Override
@@ -77,12 +121,51 @@ public class ProcessInstancesController {
                     setGraphic(null);
                     return;
                 }
+                String status = getTableRow().getItem().getStatus();
+                boolean isLocked = "COMPLETED".equals(status) || "CANCELLED".equals(status);
+                moreBtn.setDisable(isLocked);
                 setGraphic(actionBox);
             }
         });
 
+        viewerEngine = diagramViewer.getEngine();
+        viewerEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                viewerReady = true;
+                if (currentBpmnXml != null) {
+                    renderDiagram(currentBpmnXml);
+                }
+            }
+        });
+
+        String viewerPath = Objects.requireNonNull(getClass().getResource("/bpmn-viewer.html")).toExternalForm();
+        viewerEngine.load(viewerPath);
+
         loadUsers();
         loadInstanceList();
+    }
+
+    @FXML
+    private void onZoomToFit() {
+        if (viewerReady) {
+            try {
+                viewerEngine.executeScript("zoomToFit()");
+            } catch (Exception e) {
+                System.err.println("zoomToFit error: " + e.getMessage());
+            }
+        }
+    }
+
+    private void renderDiagram(String xml) {
+        if (!viewerReady || xml == null) return;
+        try {
+            String escapedXml = xml.replace("\\", "\\\\")
+                    .replace("'", "\\'")
+                    .replace("\n", "\\n");
+            viewerEngine.executeScript("renderDiagram('" + escapedXml + "')");
+        } catch (Exception e) {
+            System.err.println("renderDiagram error: " + e.getMessage());
+        }
     }
 
     private void loadUsers() {
@@ -136,7 +219,7 @@ public class ProcessInstancesController {
         dialog.getDialogPane().getButtonTypes().setAll(applyBtn, ButtonType.CANCEL);
 
         ComboBox<String> statusCombo = new ComboBox<>(FXCollections.observableArrayList(
-                "PENDING", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "OVERDUE", "CANCELLED"
+                "PENDING", "ASSIGNED", "IN_PROGRESS", "OVERDUE"
         ));
         statusCombo.setValue(row.getStatus());
 
@@ -243,6 +326,54 @@ public class ProcessInstancesController {
         }).start();
     }
 
+    private void onCompleteTask(TaskRow row) {
+        if (row == null) return;
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Complete Task");
+        confirm.setHeaderText("Complete: " + row.getName());
+        confirm.setContentText("This action cannot be undone. The task will be locked.");
+
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                statusLabel.setText("Completing task...");
+                new Thread(() -> {
+                    try {
+                        ApiService.completeTask(row.getTask().id());
+                        loadTasks(currentInstance.id());
+                        Platform.runLater(() -> statusLabel.setText("Task completed and locked"));
+                    } catch (Exception e) {
+                        Platform.runLater(() -> statusLabel.setText("Complete failed: " + e.getMessage()));
+                    }
+                }).start();
+            }
+        });
+    }
+
+    private void onCancelTask(TaskRow row) {
+        if (row == null) return;
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Cancel Task");
+        confirm.setHeaderText("Cancel: " + row.getName());
+        confirm.setContentText("This action cannot be undone. The task will be locked.");
+
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                statusLabel.setText("Cancelling task...");
+                new Thread(() -> {
+                    try {
+                        ApiService.cancelTask(row.getTask().id());
+                        loadTasks(currentInstance.id());
+                        Platform.runLater(() -> statusLabel.setText("Task cancelled and locked"));
+                    } catch (Exception e) {
+                        Platform.runLater(() -> statusLabel.setText("Cancel failed: " + e.getMessage()));
+                    }
+                }).start();
+            }
+        });
+    }
+
     public void selectInstanceById(Long instanceId) {
         if (allInstances == null) {
             loadInstanceList();
@@ -260,7 +391,7 @@ public class ProcessInstancesController {
     private void selectById(Long instanceId) {
         for (ProcessInstance inst : allInstances) {
             if (inst.id().equals(instanceId)) {
-                instanceSelector.setValue(inst.model() != null ? inst.model().name() : "Unknown");
+                instanceSelector.setValue(inst.model() != null ? inst.model().name() + " #" + inst.id() : "Instance #" + inst.id());
                 onInstanceSelected();
                 return;
             }
@@ -304,8 +435,16 @@ public class ProcessInstancesController {
         statusLabel.setText("Loading instance #" + currentInstance.id() + "...");
 
         showInstanceInfo(currentInstance);
+        loadInstanceBpmn(currentInstance);
         loadTasks(currentInstance.id());
-        loadInstanceKpi(currentInstance.id());
+    }
+
+    private void loadInstanceBpmn(ProcessInstance inst) {
+        if (inst.model() == null || inst.model().bpmnXml() == null) return;
+
+        String bpmnXml = inst.model().bpmnXml();
+        currentBpmnXml = bpmnXml;
+        renderDiagram(bpmnXml);
     }
 
     private void showInstanceInfo(ProcessInstance inst) {
@@ -316,18 +455,6 @@ public class ProcessInstancesController {
         addInfoItem("Started", formatDateTime(inst.startedAt()));
         addInfoItem("Finished", formatDateTime(inst.finishedAt()));
         addInfoItem("State", inst.currentState() != null ? inst.currentState() : "-");
-    }
-
-    private void updateInstanceKpiInfo(KpiInstanceData kpi) {
-        processInfoRows.getChildren().clear();
-        addInfoItem("ID", String.valueOf(kpi.instanceId()));
-        addInfoItem("Model", kpi.modelId());
-        addInfoItem("Status", kpi.status());
-        addInfoItem("Started", formatDateTime(kpi.startedAt()));
-        addInfoItem("Finished", formatDateTime(kpi.finishedAt()));
-        addInfoItem("Planned", kpi.plannedDuration() + " min");
-        addInfoItem("Actual", kpi.actualDuration() + " min");
-        addInfoItem("Deviation", String.format("%.1f%%", kpi.deviationPercent()));
     }
 
     private String formatDateTime(LocalDateTime dt) {
@@ -347,38 +474,82 @@ public class ProcessInstancesController {
     }
 
     private void loadTasks(Long instanceId) {
+        System.out.println("[ProcessInstancesController] loadTasks called for instanceId=" + instanceId);
         new Thread(() -> {
             try {
                 List<Task> tasks = ApiService.getTasksByInstance(instanceId);
+                System.out.println("[ProcessInstancesController] Fetched " + tasks.size() + " tasks from API");
+
                 Platform.runLater(() -> {
                     List<TaskRow> rows = new ArrayList<>();
+                    int totalPlanned = 0;
+                    int totalActual = 0;
+                    int completedCount = 0;
+                    int delayedCount = 0;
+                    int onTimeCount = 0;
+
                     for (Task t : tasks) {
                         int planned = t.plannedDuration() != null ? t.plannedDuration() : 0;
                         int actual = t.actualDuration() != null ? t.actualDuration() : 0;
-                        double dev = planned > 0 ? ((double) (actual - planned) / planned) * 100.0 : 0.0;
-                        String kpiW = t.taskDefinition() != null && t.taskDefinition().getKpiWeight() != null ?
-                                t.taskDefinition().getKpiWeight().toPlainString() : "-";
                         String assignee = t.getAssigneeName();
-                        String due = formatDateTime(t.dueDate());
-                        String started = formatDateTime(t.startedAt());
-                        rows.add(new TaskRow(t.id(),
-                                t.taskDefinition() != null ? t.taskDefinition().bpmnElementId() : "-",
+                        System.out.println("[ProcessInstancesController] Task id=" + t.id() + " name=" + t.getTaskName()
+                                + " status=" + t.status()
+                                + " plannedDuration=" + t.plannedDuration()
+                                + " actualDuration=" + t.actualDuration()
+                                + " → display actual=" + actual + " planned=" + planned);
+
+                        totalPlanned += planned;
+                        totalActual += actual;
+
+
+
+                        if ("COMPLETED".equals(t.status())) {
+                            completedCount++;
+                        }
+
+                        String elementId = t.taskDefinition() != null ? t.taskDefinition().bpmnElementId() : null;
+
+                        rows.add(new TaskRow(
+                                t.id(),
+                                elementId != null ? elementId : "-",
                                 t.getTaskName(),
                                 t.status(),
                                 assignee,
-                                planned + " / " + actual + " min",
-                                dev,
-                                kpiW,
-                                started,
-                                due,
-                                t));
+                                (actual / 60) + " / " + (planned / 60) + " h",
+                                t
+                        ));
                     }
+
+                    System.out.println("[ProcessInstancesController] totalPlanned=" + totalPlanned + " totalActual=" + totalActual
+                            + " completedCount=" + completedCount + " delayedCount=" + delayedCount);
+
+                    rows.sort(Comparator.comparing(TaskRow::getId));
                     taskTable.setItems(FXCollections.observableArrayList(rows));
+                    currentTasks = tasks;
                     statusLabel.setText("Loaded " + rows.size() + " tasks");
+
+                    // Update KPI cards from local task data
+                    double delayRate = completedCount > 0 ? (double) delayedCount / completedCount : 0;
+                    double onTimeRate = completedCount > 0 ? (double) onTimeCount / completedCount : 0;
+                    double deviation = totalPlanned > 0 ? ((double) (totalActual - totalPlanned) / totalPlanned) * 100.0 : 0.0;
+
+                    kpiPlannedLabel.setText((totalPlanned / 60) + " h");
+                    kpiActualLabel.setText((totalActual / 60) + " h");
+                    kpiOnTimeLabel.setText(String.format("%.0f%%", onTimeRate * 100));
+                    kpiOnTimeLabel.setStyle(onTimeRate >= 0.8
+                            ? "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-success-emphasis;"
+                            : "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-warning-emphasis;");
+                    kpiDelayLabel.setText(String.format("%.0f%%", delayRate * 100));
+                    kpiDelayLabel.setStyle(delayRate > 0.2
+                            ? "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-danger-emphasis;"
+                            : "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-success-emphasis;");
+
+                    kpiCardsContainer.setVisible(true);
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setText("Failed to load tasks: " + e.getMessage());
+                    kpiCardsContainer.setVisible(false);
                 });
             }
         }).start();
@@ -388,11 +559,14 @@ public class ProcessInstancesController {
         new Thread(() -> {
             try {
                 KpiInstanceData kpi = ApiService.getInstanceKpi(instanceId);
-                Platform.runLater(() -> updateInstanceKpiInfo(kpi));
-            } catch (Exception e) {
                 Platform.runLater(() -> {
-                    statusLabel.setText("KPI data not available for this instance");
+                    if (kpi != null) {
+                        addInfoItem("Planned", (kpi.plannedDuration() / 60) + " h");
+                        addInfoItem("Actual", (kpi.actualDuration() / 60) + " h");
+                    }
                 });
+            } catch (Exception e) {
+                // KPI data is best-effort; instance info still shows
             }
         }).start();
     }
@@ -408,25 +582,16 @@ public class ProcessInstancesController {
         private final String status;
         private final String assigneeName;
         private final String durationInfo;
-        private final Double deviationPercent;
-        private final String kpiWeight;
-        private final String startedAt;
-        private final String dueDate;
         private final Task task;
 
         public TaskRow(Long id, String elementId, String name, String status,
-                       String assigneeName, String durationInfo, Double deviationPercent, String kpiWeight,
-                       String startedAt, String dueDate, Task task) {
+                       String assigneeName, String durationInfo, Task task) {
             this.id = id;
             this.elementId = elementId;
             this.name = name;
             this.status = status;
             this.assigneeName = assigneeName;
             this.durationInfo = durationInfo;
-            this.deviationPercent = deviationPercent;
-            this.kpiWeight = kpiWeight;
-            this.startedAt = startedAt;
-            this.dueDate = dueDate;
             this.task = task;
         }
 
@@ -436,10 +601,6 @@ public class ProcessInstancesController {
         public String getStatus() { return status; }
         public String getAssigneeName() { return assigneeName; }
         public String getDurationInfo() { return durationInfo; }
-        public Double getDeviationPercent() { return deviationPercent; }
-        public String getKpiWeight() { return kpiWeight; }
-        public String getStartedAt() { return startedAt; }
-        public String getDueDate() { return dueDate; }
         public Task getTask() { return task; }
     }
 }

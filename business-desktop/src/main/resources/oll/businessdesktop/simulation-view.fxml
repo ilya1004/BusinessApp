@@ -72,11 +72,11 @@
                     <TableView fx:id="predictionTable" VBox.vgrow="ALWAYS" minHeight="250">
                         <columns>
                             <TableColumn fx:id="colTaskName" text="Task Name" prefWidth="180"/>
-                            <TableColumn fx:id="colBaseDuration" text="Base Duration (min)" prefWidth="130"/>
-                            <TableColumn fx:id="colScenarioDuration" text="Scenario Duration (min)" prefWidth="140"/>
-                            <TableColumn fx:id="colBaseCost" text="Base Cost ($)" prefWidth="110"/>
-                            <TableColumn fx:id="colScenarioCost" text="Scenario Cost ($)" prefWidth="120"/>
-                            <TableColumn fx:id="colResourceLoad" text="Resource Load (%)" prefWidth="130"/>
+                            <TableColumn fx:id="colBaseDuration" text="Base Duration (min)" prefWidth="170"/>
+                            <TableColumn fx:id="colScenarioDuration" text="Scenario Duration (min)" prefWidth="170"/>
+                            <TableColumn fx:id="colBaseCost" text="Base Cost ($)" prefWidth="130"/>
+                            <TableColumn fx:id="colScenarioCost" text="Scenario Cost ($)" prefWidth="140"/>
+                            <TableColumn fx:id="colResourceLoad" text="Resource Load (%)" prefWidth="140"/>
                         </columns>
                     </TableView>
                 </VBox>

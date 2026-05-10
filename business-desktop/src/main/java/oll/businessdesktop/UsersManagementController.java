@@ -3,11 +3,10 @@ package oll.businessdesktop;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import oll.businessdesktop.model.Department;
 import oll.businessdesktop.model.User;
 
@@ -23,8 +22,7 @@ public class UsersManagementController {
     @FXML private TableColumn<User, String> lastNameColumn;
     @FXML private TableColumn<User, String> departmentColumn;
     @FXML private TableColumn<User, String> roleColumn;
-    @FXML private TableColumn<User, Void> editColumn;
-    @FXML private TableColumn<User, Void> deleteColumn;
+    @FXML private TableColumn<User, Void> actionsColumn;
 
     private List<Department> allDepartments = new ArrayList<>();
 
@@ -37,8 +35,10 @@ public class UsersManagementController {
         departmentColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().departmentName()));
         roleColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().role()));
 
-        editColumn.setCellFactory(col -> new TableCell<>() {
+        actionsColumn.setCellFactory(col -> new TableCell<>() {
             private final Button editButton = new Button("Edit");
+            private final Button deleteButton = new Button("Delete");
+            private final HBox box = new HBox(6, editButton, deleteButton);
 
             {
                 editButton.getStyleClass().add("table-edit-button");
@@ -48,23 +48,6 @@ public class UsersManagementController {
                         editUser(getTableView().getItems().get(idx));
                     }
                 });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(editButton);
-                }
-            }
-        });
-
-        deleteColumn.setCellFactory(col -> new TableCell<>() {
-            private final Button deleteButton = new Button("Delete");
-
-            {
                 deleteButton.getStyleClass().add("table-delete-button");
                 deleteButton.setOnAction(e -> {
                     int idx = getIndex();
@@ -80,10 +63,13 @@ public class UsersManagementController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(deleteButton);
+                    setGraphic(box);
                 }
             }
         });
+
+        idColumn.setSortType(TableColumn.SortType.ASCENDING);
+        usersTable.getSortOrder().add(idColumn);
 
         loadDepartments();
         loadUsers();

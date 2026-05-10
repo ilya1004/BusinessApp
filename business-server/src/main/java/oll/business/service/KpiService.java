@@ -5,8 +5,6 @@ import oll.business.model.*;
 import oll.business.model.ProcessInstance.ProcessStatus;
 import oll.business.model.Task.TaskStatus;
 import oll.business.repository.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +21,6 @@ import java.util.stream.Collectors;
 @Service
 public class KpiService {
 
-    private static final Logger logger = LoggerFactory.getLogger(KpiService.class);
     private static final BigDecimal MAX_COST_RATE = new BigDecimal("2.0");
     private static final BigDecimal DEFAULT_WEIGHT = new BigDecimal("0.34");
 
@@ -33,19 +30,22 @@ public class KpiService {
     private final TaskDefinitionRepository taskDefRepository;
     private final KpiWeightsRepository kpiWeightsRepository;
     private final UserRepository userRepository;
+    private final LogService logService;
 
     public KpiService(ProcessInstanceRepository instanceRepository,
                       TaskRepository taskRepository,
                       ProcessModelRepository modelRepository,
                       TaskDefinitionRepository taskDefRepository,
                       KpiWeightsRepository kpiWeightsRepository,
-                      UserRepository userRepository) {
+                      UserRepository userRepository,
+                      LogService logService) {
         this.instanceRepository = instanceRepository;
         this.taskRepository = taskRepository;
         this.modelRepository = modelRepository;
         this.taskDefRepository = taskDefRepository;
         this.kpiWeightsRepository = kpiWeightsRepository;
         this.userRepository = userRepository;
+        this.logService = logService;
     }
 
     public KpiModelDto getModelKpi(Long modelId) {
@@ -62,7 +62,7 @@ public class KpiService {
 
         double avgDuration = calcAvgDuration(completed);
         double delayRate = calcDelayRate(completed);
-        double rating = calcRating(weights, completed, avgDuration, delayRate);
+        double rating = calcRating(model, weights, completed, delayRate);
 
         KpiModelDto dto = new KpiModelDto();
         dto.setModelId(modelId);
@@ -225,6 +225,10 @@ public class KpiService {
 
         recalculateModelWeights(request.getModelId());
 
+        logService.logInfo("KPI weights saved for modelId=" + request.getModelId()
+                + " (w1=" + request.getW1() + ", w2=" + request.getW2() + ", w3=" + request.getW3() + ")",
+                "KpiService", "saveWeights");
+
         KpiWeightsDto dto = new KpiWeightsDto();
         dto.setModelId(request.getModelId());
         dto.setW1(w.getW1());
@@ -236,16 +240,16 @@ public class KpiService {
     @Scheduled(fixedRate = 300000)
     @Transactional
     public void scheduledRecalculate() {
-        logger.info("Starting scheduled KPI recalculation");
+        logService.logInfo("Starting scheduled KPI recalculation", "KpiService", "scheduledRecalculate");
         List<ProcessModel> models = modelRepository.findAll();
         for (ProcessModel m : models) {
             try {
                 recalculateModelWeights(m.getId());
             } catch (Exception e) {
-                logger.error("KPI recalculation failed for model {}: {}", m.getId(), e.getMessage());
+                logService.logError("KPI recalculation failed for model " + m.getId() + ": " + e.getMessage(), "KpiService", "scheduledRecalculate");
             }
         }
-        logger.info("KPI recalculation complete");
+        logService.logInfo("KPI recalculation complete", "KpiService", "scheduledRecalculate");
     }
 
     @Transactional
@@ -300,21 +304,28 @@ public class KpiService {
         return (double) delayed / tasks.size();
     }
 
-    private double calcRating(KpiWeights weights, List<ProcessInstance> completed, double avgDuration, double delayRate) {
-        double durationScore = avgDuration > 0 ? 1.0 : 1.0;
+    private double calcRating(ProcessModel model, KpiWeights weights, List<ProcessInstance> completed, double delayRate) {
         double delayScore = 1.0 - Math.min(delayRate, 1.0);
 
-        double efficiency = 0.0;
+        double efficiency = 1.0;
         if (!completed.isEmpty()) {
             List<Task> allTasks = new ArrayList<>();
             for (ProcessInstance inst : completed) {
                 allTasks.addAll(taskRepository.findByInstanceId(inst.getId()));
             }
-            long onTime = allTasks.stream()
-                    .filter(t -> t.getActualDuration() != null && t.getPlannedDuration() != null &&
-                            t.getActualDuration() <= t.getPlannedDuration())
-                    .count();
-            efficiency = allTasks.isEmpty() ? 1.0 : (double) onTime / allTasks.size();
+            if (!allTasks.isEmpty()) {
+                double totalDeviation = 0;
+                int count = 0;
+                for (Task t : allTasks) {
+                    if (t.getActualDuration() != null && t.getPlannedDuration() != null && t.getPlannedDuration() > 0) {
+                        double ratio = (double) t.getActualDuration() / t.getPlannedDuration();
+                        totalDeviation += Math.max(0, ratio - 1.0);
+                        count++;
+                    }
+                }
+                double avgOvershoot = count > 0 ? totalDeviation / count : 0;
+                efficiency = 1.0 - Math.min(avgOvershoot, 1.0);
+            }
         }
 
         double costRate = calcCostRate(completed);
@@ -340,6 +351,13 @@ public class KpiService {
                 TaskDefinition def = t.getTaskDefinition();
                 if (def != null && def.getExpectedCost() != null) {
                     totalPlannedCost = totalPlannedCost.add(def.getExpectedCost());
+                    if (t.getActualDuration() != null && t.getPlannedDuration() != null && t.getPlannedDuration() > 0) {
+                        BigDecimal ratio = BigDecimal.valueOf(t.getActualDuration())
+                                .divide(BigDecimal.valueOf(t.getPlannedDuration()), 4, RoundingMode.HALF_UP);
+                        totalActualCost = totalActualCost.add(def.getExpectedCost().multiply(ratio));
+                    } else {
+                        totalActualCost = totalActualCost.add(def.getExpectedCost());
+                    }
                 }
             }
         }
@@ -396,6 +414,13 @@ public class KpiService {
             TaskDefinition def = t.getTaskDefinition();
             if (def != null && def.getExpectedCost() != null) {
                 plannedCost = plannedCost.add(def.getExpectedCost());
+                if (t.getActualDuration() != null && t.getPlannedDuration() != null && t.getPlannedDuration() > 0) {
+                    BigDecimal ratio = BigDecimal.valueOf(t.getActualDuration())
+                            .divide(BigDecimal.valueOf(t.getPlannedDuration()), 4, RoundingMode.HALF_UP);
+                    costTotal = costTotal.add(def.getExpectedCost().multiply(ratio));
+                } else {
+                    costTotal = costTotal.add(def.getExpectedCost());
+                }
             }
         }
         double costScore = plannedCost.compareTo(BigDecimal.ZERO) > 0 ?
