@@ -11,5 +11,6 @@ public record ProcessInstance(
     String status,
     LocalDateTime startedAt,
     LocalDateTime finishedAt,
-    String currentState
+    String currentState,
+    String name
 ) {}

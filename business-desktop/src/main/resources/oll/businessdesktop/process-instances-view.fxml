@@ -14,7 +14,6 @@
                 <Label text="Instance:" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
                 <ComboBox fx:id="instanceSelector" prefWidth="350" promptText="Select an instance..."/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Zoom to Fit" onAction="#onZoomToFit" style="-fx-font-size: 12px;"/>
             </HBox>
             <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
         </VBox>

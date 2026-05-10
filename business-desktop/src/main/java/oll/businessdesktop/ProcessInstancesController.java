@@ -145,17 +145,6 @@ public class ProcessInstancesController {
         loadInstanceList();
     }
 
-    @FXML
-    private void onZoomToFit() {
-        if (viewerReady) {
-            try {
-                viewerEngine.executeScript("zoomToFit()");
-            } catch (Exception e) {
-                System.err.println("zoomToFit error: " + e.getMessage());
-            }
-        }
-    }
-
     private void renderDiagram(String xml) {
         if (!viewerReady || xml == null) return;
         try {
@@ -391,7 +380,15 @@ public class ProcessInstancesController {
     private void selectById(Long instanceId) {
         for (ProcessInstance inst : allInstances) {
             if (inst.id().equals(instanceId)) {
-                instanceSelector.setValue(inst.model() != null ? inst.model().name() + " #" + inst.id() : "Instance #" + inst.id());
+                String label = inst.name() != null ? inst.name() : "";
+                if (inst.model() != null) {
+                    if (!label.isEmpty()) label += " - ";
+                    label += inst.model().name();
+                } else {
+                    if (!label.isEmpty()) label += " - ";
+                    label += "Instance #" + inst.id();
+                }
+                instanceSelector.setValue(label);
                 onInstanceSelected();
                 return;
             }
@@ -411,7 +408,17 @@ public class ProcessInstancesController {
                     }
                     instanceSelector.setItems(FXCollections.observableArrayList(
                             allInstances.stream()
-                                    .map(inst -> inst.model() != null ? inst.model().name() + " #" + inst.id() : "Instance #" + inst.id())
+                                    .map(inst -> {
+                                        String label = inst.name() != null ? inst.name() : "";
+                                        if (inst.model() != null) {
+                                            if (!label.isEmpty()) label += " - ";
+                                            label += inst.model().name();
+                                        } else {
+                                            if (!label.isEmpty()) label += " - ";
+                                            label += "Instance #" + inst.id();
+                                        }
+                                        return label;
+                                    })
                                     .toList()));
                     statusLabel.setText(allInstances.size() + " instance(s) available");
                     instanceSelector.setOnAction(e -> onInstanceSelected());
@@ -450,6 +457,7 @@ public class ProcessInstancesController {
     private void showInstanceInfo(ProcessInstance inst) {
         processInfoRows.getChildren().clear();
         addInfoItem("ID", String.valueOf(inst.id()));
+        addInfoItem("Name", inst.name() != null ? inst.name() : "-");
         addInfoItem("Model", inst.model() != null ? inst.model().name() : "N/A");
         addInfoItem("Status", inst.status());
         addInfoItem("Started", formatDateTime(inst.startedAt()));

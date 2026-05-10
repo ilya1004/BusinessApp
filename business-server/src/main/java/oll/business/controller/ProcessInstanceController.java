@@ -65,6 +65,7 @@ public class ProcessInstanceController {
 
         ProcessInstance instance = new ProcessInstance();
         instance.setModel(model);
+        instance.setName(request.getInstanceName());
         instance.setStatus(ProcessStatus.RUNNING);
         instance.setStartedAt(LocalDateTime.now());
         instance.setCurrentState("Started");

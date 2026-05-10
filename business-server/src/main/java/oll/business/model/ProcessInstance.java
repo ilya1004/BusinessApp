@@ -30,6 +30,9 @@ public class ProcessInstance {
     @Column(length = 100)
     private String currentState;
 
+    @Column(length = 255)
+    private String name;
+
     public ProcessInstance() {}
 
     public Long getId() { return id; }
@@ -44,6 +47,8 @@ public class ProcessInstance {
     public void setFinishedAt(LocalDateTime finishedAt) { this.finishedAt = finishedAt; }
     public String getCurrentState() { return currentState; }
     public void setCurrentState(String currentState) { this.currentState = currentState; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public enum ProcessStatus {
         PENDING, RUNNING, COMPLETED, CANCELLED, FAILED
