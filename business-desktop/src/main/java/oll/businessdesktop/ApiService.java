@@ -35,6 +35,7 @@ public class ApiService {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
 
     private static String authToken;
+    private static String currentUserRole;
 
     public static AuthResponse login(String username, String password) throws IOException, InterruptedException {
         LoginRequest request = new LoginRequest(username, password);
@@ -51,10 +52,16 @@ public class ApiService {
         if (response.statusCode() == 200) {
             AuthResponse authResponse = objectMapper.readValue(response.body(), AuthResponse.class);
             authToken = authResponse.token();
+            User user = getCurrentUser();
+            currentUserRole = user != null ? user.role() : null;
             return authResponse;
         } else {
             throw new RuntimeException("Login failed: " + response.body());
         }
+    }
+
+    public static String getCurrentUserRole() {
+        return currentUserRole;
     }
 
     public static User getCurrentUser() throws IOException, InterruptedException {

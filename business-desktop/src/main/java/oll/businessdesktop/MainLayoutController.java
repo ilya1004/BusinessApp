@@ -7,16 +7,26 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
+import java.util.List;
 
 public class MainLayoutController {
 
     @FXML private BorderPane rootLayout;
     @FXML private BorderPane contentArea;
     @FXML private javafx.scene.control.Label pageTitle;
+    @FXML private Button btnProcessDesigner;
+    @FXML private Button btnProcessView;
+    @FXML private Button btnProcessInstances;
+    @FXML private Button btnSimulation;
+    @FXML private Button btnMyTasks;
+    @FXML private Button btnUsers;
+    @FXML private Button btnDepartments;
+    @FXML private Button btnLogs;
 
     private static MainLayoutController instance;
     private boolean isDarkTheme = false;
@@ -24,7 +34,40 @@ public class MainLayoutController {
     @FXML
     public void initialize() {
         instance = this;
-        onProcessDesignerTab();
+        String role = ApiService.getCurrentUserRole();
+        applyRoleVisibility(role);
+        navigateToFirstAvailable(role);
+    }
+
+    private void applyRoleVisibility(String role) {
+        if (role == null) return;
+        allButtons().forEach(b -> { b.setVisible(false); b.setManaged(false); });
+        switch (role) {
+            case "ADMIN" -> show(btnProcessDesigner, btnProcessView, btnProcessInstances, btnSimulation, btnUsers, btnDepartments, btnLogs);
+            case "MANAGER" -> show(btnProcessView, btnProcessInstances, btnSimulation);
+            case "ANALYST" -> show(btnProcessDesigner, btnProcessView, btnProcessInstances, btnSimulation);
+            case "EXECUTOR" -> show(btnMyTasks);
+        }
+    }
+
+    private void show(Button... buttons) {
+        for (Button b : buttons) {
+            b.setVisible(true);
+            b.setManaged(true);
+        }
+    }
+
+    private List<Button> allButtons() {
+        return List.of(btnProcessDesigner, btnProcessView, btnProcessInstances, btnSimulation, btnMyTasks, btnUsers, btnDepartments, btnLogs);
+    }
+
+    private void navigateToFirstAvailable(String role) {
+        if (role == null) return;
+        switch (role) {
+            case "MANAGER" -> onProcessViewTab();
+            case "EXECUTOR" -> onMyTasksTab();
+            default -> onProcessDesignerTab();
+        }
     }
 
     public static void navigateToInstances(Long instanceId) {

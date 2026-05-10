@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/simulations")
 @CrossOrigin(origins = "*")
-@PreAuthorize("hasAnyRole('ANALYST','ADMIN')")
 @Validated
 public class SimulationController {
 

@@ -300,3 +300,43 @@
 [2026-05-10 21:50:48] [INFO] [AuthController] User logged in: admin | action=login
 [2026-05-10 21:52:30] [INFO] [AuthController] User logged in: admin | action=login
 [2026-05-10 21:54:34] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:55:15] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 21:55:15] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 21:57:54] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 22:00:15] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:00:15] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:05:15] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:05:15] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:10:15] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:10:15] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:13:01] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:13:01] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:13:01] [INFO] [SYSTEM] Default analyst created: analyst / analyst123 | action=init
+[2026-05-10 22:13:01] [INFO] [SYSTEM] Default manager created: manager / manager123 | action=init
+[2026-05-10 22:13:01] [INFO] [SYSTEM] Default executor created: executor / executor123 | action=init
+[2026-05-10 22:13:18] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 22:13:40] [INFO] [AuthController] User logged in: user | action=login
+[2026-05-10 22:15:42] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 22:15:54] [INFO] [AuthController] User logged in: user | action=login
+[2026-05-10 22:16:16] [INFO] [AuthController] User logged in: manager | action=login
+[2026-05-10 22:18:01] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:18:01] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:18:18] [INFO] [AuthController] User logged in: manager | action=login
+[2026-05-10 22:18:45] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 22:18:50] [INFO] [SimulationController] Running simulation for model id=4 | action=runSimulation
+[2026-05-10 22:18:50] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
+[2026-05-10 22:18:52] [INFO] [SimulationController] Running simulation for model id=4 | action=runSimulation
+[2026-05-10 22:18:52] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
+[2026-05-10 22:21:11] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:21:11] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:22:03] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:22:03] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:23:26] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 22:23:26] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 22:23:46] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 22:23:57] [INFO] [AuthController] User logged in: manager | action=login
+[2026-05-10 22:24:03] [INFO] [SimulationController] Running simulation for model id=4 | action=runSimulation
+[2026-05-10 22:24:03] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
+[2026-05-10 22:24:05] [INFO] [SimulationController] Running simulation for model id=4 | action=runSimulation
+[2026-05-10 22:24:05] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
+[2026-05-10 22:24:20] [INFO] [AuthController] User logged in: analyst | action=login
