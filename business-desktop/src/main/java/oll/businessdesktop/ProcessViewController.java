@@ -64,7 +64,7 @@ public class ProcessViewController {
         colKpiWeight.setCellValueFactory(new PropertyValueFactory<>("kpiWeight"));
 
         colActions.setCellFactory(col -> new TableCell<>() {
-            private final Button editBtn = new Button("Edit");
+            private final Button editBtn = new Button("Редактировать");
             {
                 editBtn.getStyleClass().add("table-action-button");
                 editBtn.setOnAction(e -> {
@@ -110,48 +110,48 @@ public class ProcessViewController {
         String selectedName = diagramSelector.getValue();
         if (selectedName == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Start Instance");
+            alert.setTitle("Запуск экземпляра");
             alert.setHeaderText(null);
-            alert.setContentText("Please select a diagram first.");
+            alert.setContentText("Пожалуйста, выберите диаграмму.");
             alert.showAndWait();
             return;
         }
 
         ProcessModel selectedModel = resolveModelByName(selectedName);
         if (selectedModel == null) {
-            statusLabel.setText("Model not found: " + selectedName);
+            statusLabel.setText("Модель не найдена: " + selectedName);
             return;
         }
 
         TextInputDialog nameDialog = new TextInputDialog("Instance_" + selectedName);
-        nameDialog.setTitle("Start Process Instance");
-        nameDialog.setHeaderText("Create new instance of: " + selectedName);
-        nameDialog.setContentText("Instance name:");
+        nameDialog.setTitle("Запуск экземпляра процесса");
+        nameDialog.setHeaderText("Создание экземпляра: " + selectedName);
+        nameDialog.setContentText("Имя экземпляра:");
 
         nameDialog.showAndWait().ifPresent(instanceName -> {
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-            confirm.setTitle("Confirm");
-            confirm.setHeaderText("Create Process Instance");
-            confirm.setContentText("Create instance \"" + instanceName + "\" with " +
-                    (selectedModel.taskDefinitions() != null ? selectedModel.taskDefinitions().size() : 0) + " tasks?");
+            confirm.setTitle("Подтверждение");
+            confirm.setHeaderText("Создание экземпляра процесса");
+            confirm.setContentText("Создать экземпляр \"" + instanceName + "\" с " +
+                    (selectedModel.taskDefinitions() != null ? selectedModel.taskDefinitions().size() : 0) + " задачами?");
 
             confirm.showAndWait().ifPresent(btn -> {
                 if (btn == ButtonType.OK) {
-                    statusLabel.setText("Creating instance...");
+                    statusLabel.setText("Создание экземпляра...");
                     new Thread(() -> {
                         try {
                             ProcessInstance instance = ApiService.createProcessInstance(selectedModel.id(), instanceName);
                             Platform.runLater(() -> {
-                                statusLabel.setText("Created instance id=" + instance.id());
+                                statusLabel.setText("Создан экземпляр id=" + instance.id());
                                 MainLayoutController.navigateToInstances(instance.id());
                             });
                         } catch (Exception e) {
                             Platform.runLater(() -> {
-                                statusLabel.setText("Failed: " + e.getMessage());
+                                statusLabel.setText("Ошибка: " + e.getMessage());
                                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                                alert.setTitle("Error");
+                                alert.setTitle("Ошибка");
                                 alert.setHeaderText(null);
-                                alert.setContentText("Failed to create instance: " + e.getMessage());
+                                alert.setContentText("Ошибка создания экземпляра: " + e.getMessage());
                                 alert.showAndWait();
                             });
                         }
@@ -170,24 +170,24 @@ public class ProcessViewController {
     }
 
     private void loadDiagramList() {
-        statusLabel.setText("Loading diagrams...");
+        statusLabel.setText("Загрузка диаграмм...");
         new Thread(() -> {
             try {
                 java.util.List<ProcessModel> models = ApiService.getAllProcessModels();
                 Platform.runLater(() -> {
                     if (models == null || models.isEmpty()) {
                         diagramSelector.setItems(FXCollections.emptyObservableList());
-                        statusLabel.setText("No diagrams in database");
+                        statusLabel.setText("Нет диаграмм в базе данных");
                         return;
                     }
                     diagramSelector.setItems(FXCollections.observableArrayList(
                             models.stream().map(ProcessModel::name).toList()));
-                    statusLabel.setText(models.size() + " diagram(s) available");
+                    statusLabel.setText("Доступно: " + models.size() + " диаграмм");
                     diagramSelector.setOnAction(e -> onDiagramSelected());
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
-                    statusLabel.setText("Failed to load diagrams: " + e.getMessage());
+                    statusLabel.setText("Ошибка загрузки диаграмм: " + e.getMessage());
                 });
             }
         }).start();
@@ -197,18 +197,18 @@ public class ProcessViewController {
         String selectedName = diagramSelector.getValue();
         if (selectedName == null) return;
 
-        statusLabel.setText("Loading " + selectedName + "...");
+        statusLabel.setText("Загрузка " + selectedName + "...");
         new Thread(() -> {
             try {
                 ProcessModel model = ApiService.findProcessModelByName(selectedName);
                 if (model == null) {
-                    Platform.runLater(() -> statusLabel.setText("Diagram not found"));
+                    Platform.runLater(() -> statusLabel.setText("Диаграмма не найдена"));
                     return;
                 }
                 currentModel = model;
                 Platform.runLater(() -> showDiagram(model));
             } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Failed to load: " + e.getMessage()));
+                Platform.runLater(() -> statusLabel.setText("Ошибка загрузки: " + e.getMessage()));
             }
         }).start();
     }
@@ -219,14 +219,14 @@ public class ProcessViewController {
         if (Files.exists(bpmnFile)) {
             try {
                 xml = Files.readString(bpmnFile, StandardCharsets.UTF_8);
-                statusLabel.setText("Loaded from local file");
+                statusLabel.setText("Загружено из локального файла");
             } catch (IOException e) {
                 xml = model.bpmnXml();
                 try {
                     Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-                    statusLabel.setText("Restored from DB to local file");
+                    statusLabel.setText("Восстановлено из БД в локальный файл");
                 } catch (IOException ex) {
-                    statusLabel.setText("Using BPMN from DB (could not save file)");
+                    statusLabel.setText("Используется BPMN из БД (не удалось сохранить файл)");
                 }
             }
         } else {
@@ -234,7 +234,7 @@ public class ProcessViewController {
             try {
             Files.createDirectories(BPMN_DIR);
                 Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8);
-                statusLabel.setText("Created from DB and saved locally");
+                statusLabel.setText("Создано из БД и сохранено локально");
             } catch (IOException e) {
                 statusLabel.setText("Using BPMN from DB (could not save file)");
             }
@@ -250,10 +250,10 @@ public class ProcessViewController {
 
     private void showProcessInfo(ProcessModel model) {
         processInfoRows.getChildren().clear();
-        addInfoItem("Name", model.name());
-        addInfoItem("Version", String.valueOf(model.version()));
-        addInfoItem("Author ID", model.authorId() != null ? model.authorId().toString() : "N/A");
-        addInfoItem("Task Count", model.taskDefinitions() != null ? String.valueOf(model.taskDefinitions().size()) : "0");
+        addInfoItem("Название", model.name());
+        addInfoItem("Версия", String.valueOf(model.version()));
+        addInfoItem("Автор", model.authorId() != null ? model.authorId().toString() : "Н/Д");
+        addInfoItem("Кол-во задач", model.taskDefinitions() != null ? String.valueOf(model.taskDefinitions().size()) : "0");
     }
 
     private void addInfoItem(String label, String value) {
@@ -300,10 +300,10 @@ public class ProcessViewController {
 
     private void openEditDialog(TaskDefinitionRow row) {
         Dialog<TaskDefinitionRow> dialog = new Dialog<>();
-        dialog.setTitle("Edit Task Definition");
-        dialog.setHeaderText("Editing task #" + row.getId());
+        dialog.setTitle("Редактирование задачи");
+        dialog.setHeaderText("Редактирование задачи #" + row.getId());
 
-        ButtonType saveBtn = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveBtn = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
 
         TextField nameField = new TextField(row.getName());
@@ -311,10 +311,10 @@ public class ProcessViewController {
         TextField costField = new TextField(row.getCost().toPlainString());
         TextField kpiField = new TextField(row.getKpiWeight().toPlainString());
 
-        nameField.setPromptText("Name");
-        durationField.setPromptText("Duration (h)");
-        costField.setPromptText("Cost ($)");
-        kpiField.setPromptText("KPI Weight");
+        nameField.setPromptText("Название");
+        durationField.setPromptText("Длительность (ч)");
+        costField.setPromptText("Стоимость ($)");
+        kpiField.setPromptText("Вес KPI");
 
         durationField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*") ? c : null));
         costField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*(\\.\\d{0,2})?") ? c : null));
@@ -324,13 +324,13 @@ public class ProcessViewController {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
-        grid.add(new Label("Name:"), 0, 0);
+        grid.add(new Label("Название:"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Duration (h):"), 0, 1);
+        grid.add(new Label("Длительность (ч):"), 0, 1);
         grid.add(durationField, 1, 1);
-        grid.add(new Label("Cost ($):"), 0, 2);
+        grid.add(new Label("Стоимость ($):"), 0, 2);
         grid.add(costField, 1, 2);
-        grid.add(new Label("KPI Weight:"), 0, 3);
+        grid.add(new Label("Вес KPI:"), 0, 3);
         grid.add(kpiField, 1, 3);
 
         dialog.getDialogPane().setContent(grid);
@@ -356,7 +356,7 @@ public class ProcessViewController {
         });
 
         dialog.showAndWait().ifPresent(updated -> {
-            statusLabel.setText("Updating task definition...");
+            statusLabel.setText("Обновление задачи...");
             new Thread(() -> {
                 try {
                     TaskDefinition result = ApiService.updateTaskDefinition(
@@ -368,7 +368,7 @@ public class ProcessViewController {
                     );
                     ProcessModel fresh = ApiService.findProcessModelByName(currentModel.name());
                     Platform.runLater(() -> {
-                        statusLabel.setText("Task definition updated");
+                        statusLabel.setText("Задача обновлена");
                         if (fresh != null) {
                             currentModel = fresh;
                             Path bpmnFile = BPMN_DIR.resolve(currentModel.name() + ".bpmn");
@@ -379,7 +379,7 @@ public class ProcessViewController {
                         }
                     });
                 } catch (Exception e) {
-                    Platform.runLater(() -> statusLabel.setText("Failed: " + e.getMessage()));
+                    Platform.runLater(() -> statusLabel.setText("Ошибка: " + e.getMessage()));
                 }
             }).start();
         });

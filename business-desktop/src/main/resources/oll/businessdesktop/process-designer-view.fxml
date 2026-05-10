@@ -12,14 +12,14 @@
                 <Label fx:id="lastSavedLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
             </HBox>
             <ToolBar fx:id="toolBar">
-                <Button text="New Diagram" onAction="#onNewDiagram"/>
-                <Button text="Save" onAction="#onSaveXML"/>
+                <Button text="Новая диаграмма" onAction="#onNewDiagram"/>
+                <Button text="Сохранить" onAction="#onSaveXML"/>
                 <Separator/>
-                <Button text="Open .bpmn" onAction="#onOpenFile"/>
-                <Button text="Open from DB" onAction="#onOpenFromDb"/>
+                <Button text="Открыть .bpmn" onAction="#onOpenFile"/>
+                <Button text="Открыть из БД" onAction="#onOpenFromDb"/>
                 <Separator/>
-                <Button text="Export to .SVG" onAction="#onExportSVG"/>
-                <Button text="Open SVG Folder" onAction="#onOpenSvgFolder"/>
+                <Button text="Экспорт в .SVG" onAction="#onExportSVG"/>
+                <Button text="Открыть папку SVG" onAction="#onOpenSvgFolder"/>
                 <Region HBox.hgrow="ALWAYS"/>
             </ToolBar>
         </VBox>
@@ -30,10 +30,10 @@
     <right>
         <ScrollPane fitToWidth="true" styleClass="properties-panel" prefWidth="280" minWidth="280">
             <VBox spacing="10" style="-fx-padding: 15;">
-                <Label text="Properties" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Label text="Свойства" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                 <Separator/>
                 <VBox fx:id="propertiesContainer" spacing="8">
-                    <Label fx:id="noSelectionLabel" text="Select an element" style="-fx-text-fill: -color-fg-muted;"/>
+                    <Label fx:id="noSelectionLabel" text="Выберите элемент" style="-fx-text-fill: -color-fg-muted;"/>
                 </VBox>
             </VBox>
         </ScrollPane>

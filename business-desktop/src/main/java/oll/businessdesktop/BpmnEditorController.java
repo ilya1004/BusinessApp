@@ -37,7 +37,7 @@ public class BpmnEditorController {
             bridge = new JavaBridge(LOG_FILE);
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Could not create log file:\n" + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Не удалось создать файл лога:\n" + e.getMessage());
             return;
         }
 
@@ -69,7 +69,7 @@ public class BpmnEditorController {
     private void onOpenFile() {
         Stage stage = (Stage) webView.getScene().getWindow();
         FileChooser chooser = new FileChooser();
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BPMN Files", "*.bpmn", "*.xml"));
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BPMN файлы", "*.bpmn", "*.xml"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
             try {
@@ -77,7 +77,7 @@ public class BpmnEditorController {
                 safeExecScript("importXML(`" + escapeForJs(xml) + "`);");
             } catch (Exception ex) {
                 ex.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Could not open file: " + ex.getMessage());
+                showAlert(Alert.AlertType.ERROR, "Ошибка открытия файла: " + ex.getMessage());
             }
         }
     }
@@ -108,7 +108,7 @@ public class BpmnEditorController {
                 Desktop.getDesktop().open(SVG_DIR.toFile());
             }
         } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Could not open folder: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Ошибка открытия папки: " + e.getMessage());
         }
     }
 
@@ -167,7 +167,7 @@ public class BpmnEditorController {
             javafx.application.Platform.runLater(() -> {
                 try (FileWriter fw = new FileWriter("my-diagram.bpmn", StandardCharsets.UTF_8)) {
                     fw.write(xml);
-                    showAlert(Alert.AlertType.INFORMATION, "Diagram saved to my-diagram.bpmn");
+                    showAlert(Alert.AlertType.INFORMATION, "Диаграмма сохранена в my-diagram.bpmn");
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

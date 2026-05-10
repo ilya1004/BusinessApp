@@ -20,7 +20,7 @@ public class BusinessApplication extends Application {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/login-view.fxml"));
             Scene scene = new Scene(loader.load(), 400, 500);
             primaryStage.setScene(scene);
-            primaryStage.setTitle("Business Desktop - Login");
+            primaryStage.setTitle("Business Desktop — Вход");
             primaryStage.setResizable(false);
             primaryStage.show();
         } catch (IOException e) {

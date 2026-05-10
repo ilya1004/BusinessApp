@@ -40,7 +40,7 @@ public class MainLayoutController {
 
     @FXML
     private void onProcessDesignerTab() {
-        pageTitle.setText("Process Designer");
+        pageTitle.setText("Редактор процессов");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-designer-view.fxml"));
             Pane view = loader.load();
@@ -48,13 +48,13 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Process Designer load error: " + e.getMessage());
+            showAlert("Ошибка загрузки редактора процессов: " + e.getMessage());
         }
     }
 
     @FXML
     private void onProcessViewTab() {
-        pageTitle.setText("Process View");
+        pageTitle.setText("Модели процессов");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-view-view.fxml"));
             Pane view = loader.load();
@@ -62,25 +62,25 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Process View load error: " + e.getMessage());
+            showAlert("Ошибка загрузки просмотра процессов: " + e.getMessage());
         }
     }
 
     @FXML
     private void onTab2() {
-        pageTitle.setText("Tab 2");
-        loadPlaceholder("Tab 2");
+        pageTitle.setText("Вкладка 2");
+        loadPlaceholder("Вкладка 2");
     }
 
     @FXML
     private void onTab3() {
-        pageTitle.setText("Tab 3");
-        loadPlaceholder("Tab 3");
+        pageTitle.setText("Вкладка 3");
+        loadPlaceholder("Вкладка 3");
     }
 
     @FXML
     private void onProfileClick() {
-        pageTitle.setText("User Profile");
+        pageTitle.setText("Профиль пользователя");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/profile-view.fxml"));
             Pane view = loader.load();
@@ -88,12 +88,12 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Profile load error: " + e.getMessage());
+            showAlert("Ошибка загрузки профиля: " + e.getMessage());
         }
     }
 
     private void loadProcessDesigner() {
-        pageTitle.setText("BPMN Editor");
+        pageTitle.setText("BPMN редактор");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-designer-view.fxml"));
             Pane view = loader.load();
@@ -101,13 +101,13 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("BPMN editor load error: " + e.getMessage());
+            showAlert("Ошибка загрузки BPMN редактора: " + e.getMessage());
         }
     }
 
     @FXML
     private void onUsersTab() {
-        pageTitle.setText("User Management");
+        pageTitle.setText("Управление пользователями");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/users-management-view.fxml"));
             Pane view = loader.load();
@@ -115,13 +115,13 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Page load error: " + e.getMessage());
+            showAlert("Ошибка загрузки страницы: " + e.getMessage());
         }
     }
 
     @FXML
     private void onDepartmentsTab() {
-        pageTitle.setText("Organization Management");
+        pageTitle.setText("Управление организацией");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/departments-management-view.fxml"));
             Pane view = loader.load();
@@ -129,7 +129,7 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Page load error: " + e.getMessage());
+            showAlert("Ошибка загрузки страницы: " + e.getMessage());
         }
     }
 
@@ -139,7 +139,7 @@ public class MainLayoutController {
     }
 
     private void onProcessInstancesTab(Long instanceId) {
-        pageTitle.setText("Process Instances");
+        pageTitle.setText("Процессы");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/process-instances-view.fxml"));
             Pane view = loader.load();
@@ -151,13 +151,13 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Process Instances load error: " + e.getMessage());
+            showAlert("Ошибка загрузки экземпляров процессов: " + e.getMessage());
         }
     }
 
     @FXML
     private void onSimulationTab() {
-        pageTitle.setText("Scenario Simulation");
+        pageTitle.setText("Симуляция сценариев");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/simulation-view.fxml"));
             Pane view = loader.load();
@@ -165,13 +165,13 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Simulation load error: " + e.getMessage());
+            showAlert("Ошибка загрузки симуляции: " + e.getMessage());
         }
     }
 
     @FXML
     private void onMyTasksTab() {
-        pageTitle.setText("My Tasks");
+        pageTitle.setText("Мои задачи");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/my-tasks-view.fxml"));
             Pane view = loader.load();
@@ -179,13 +179,13 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("My Tasks load error: " + e.getMessage());
+            showAlert("Ошибка загрузки задач: " + e.getMessage());
         }
     }
 
     @FXML
     private void onLogsTab() {
-        pageTitle.setText("Server Logs");
+        pageTitle.setText("Логи сервера");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/oll/businessdesktop/logs-view.fxml"));
             Pane view = loader.load();
@@ -193,7 +193,7 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Logs load error: " + e.getMessage());
+            showAlert("Ошибка загрузки логов: " + e.getMessage());
         }
     }
 
@@ -221,7 +221,7 @@ public class MainLayoutController {
             BorderPane.setMargin(view, new javafx.geometry.Insets(0));
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Page load error: " + e.getMessage());
+            showAlert("Ошибка загрузки страницы: " + e.getMessage());
         }
     }
 

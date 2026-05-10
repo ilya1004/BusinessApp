@@ -277,3 +277,25 @@
 [2026-05-10 15:38:42] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
 [2026-05-10 15:38:55] [INFO] [SimulationController] Running simulation for model id=4 | action=runSimulation
 [2026-05-10 15:38:55] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
+[2026-05-10 21:33:26] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 21:33:27] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 21:33:46] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:34:34] [INFO] [SimulationController] Running simulation for model id=4 | action=runSimulation
+[2026-05-10 21:34:34] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
+[2026-05-10 21:34:36] [INFO] [SimulationController] Running simulation for model id=4 | action=runSimulation
+[2026-05-10 21:34:36] [INFO] [SimulationController] Simulation completed for model id=4 | action=runSimulation
+[2026-05-10 21:35:32] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:38:26] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 21:38:26] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 21:38:30] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:40:18] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:41:52] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:43:01] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:43:26] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 21:43:26] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 21:48:26] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 21:48:26] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 21:50:15] [INFO] [KpiService] Starting scheduled KPI recalculation | action=scheduledRecalculate
+[2026-05-10 21:50:15] [INFO] [KpiService] KPI recalculation complete | action=scheduledRecalculate
+[2026-05-10 21:50:48] [INFO] [AuthController] User logged in: admin | action=login
+[2026-05-10 21:52:30] [INFO] [AuthController] User logged in: admin | action=login

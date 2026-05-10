@@ -12,9 +12,9 @@
     <top>
         <HBox spacing="10" styleClass="departments-toolbar">
             <padding><Insets top="15" bottom="15" left="20" right="20"/></padding>
-            <Button text="Create Department" onAction="#onCreateDepartment" styleClass="create-button"/>
-            <Button text="Edit" onAction="#onEditDepartment" styleClass="edit-button"/>
-            <Button text="Delete Department" onAction="#onDeleteDepartment" styleClass="delete-button"/>
+            <Button text="Создать отдел" onAction="#onCreateDepartment" styleClass="create-button"/>
+            <Button text="Редактировать" onAction="#onEditDepartment" styleClass="edit-button"/>
+            <Button text="Удалить отдел" onAction="#onDeleteDepartment" styleClass="delete-button"/>
         </HBox>
     </top>
     <center>

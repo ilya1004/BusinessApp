@@ -11,10 +11,10 @@
         <VBox spacing="8">
             <padding><Insets top="15" bottom="10" left="15" right="15"/></padding>
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="Diagram:" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
-                <ComboBox fx:id="diagramSelector" prefWidth="350" promptText="Select a diagram..."/>
+                <Label text="Диаграмма:" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+                <ComboBox fx:id="diagramSelector" prefWidth="350" promptText="Выберите диаграмму..."/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="createInstanceBtn" text="Start Instance" onAction="#onCreateInstance"/>
+                <Button fx:id="createInstanceBtn" text="Запустить экземпляр" onAction="#onCreateInstance"/>
             </HBox>
             <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
         </VBox>
@@ -24,25 +24,25 @@
             <VBox spacing="15" style="-fx-padding: 10;" maxWidth="Infinity">
                 <VBox fx:id="diagramContainer" prefHeight="350" styleClass="panel-box" minHeight="350" maxHeight="350" maxWidth="Infinity">
                     <padding><Insets top="8" left="8" bottom="8" right="8"/></padding>
-                    <Label text="Diagram Preview" style="-fx-font-size: 14px; -fx-font-weight: bold;">
+                    <Label text="Просмотр диаграммы" style="-fx-font-size: 14px; -fx-font-weight: bold;">
                         <VBox.margin><Insets bottom="5"/></VBox.margin>
                     </Label>
-                    <WebView fx:id="diagramViewer" prefHeight="320" VBox.vgrow="NEVER"/>
+                    <WebView fx:id="diagramViewer" prefHeight="320" maxWidth="Infinity" VBox.vgrow="NEVER"/>
                 </VBox>
                 <VBox fx:id="infoContainer" spacing="8" styleClass="panel-box" maxWidth="Infinity">
-                    <Label text="Process Information" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <Label text="Информация о процессе" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                     <HBox fx:id="processInfoRows" spacing="20"/>
                 </VBox>
                 <VBox fx:id="tableContainer" spacing="8" styleClass="panel-box" VBox.vgrow="ALWAYS" maxWidth="Infinity">
-                    <Label text="Task Definitions" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    <Label text="Определения задач" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                     <TableView fx:id="taskTable" VBox.vgrow="ALWAYS" minHeight="300">
                         <columns>
                             <TableColumn fx:id="colId" text="ID" prefWidth="70"/>
-                            <TableColumn fx:id="colName" text="Name" prefWidth="200"/>
-                            <TableColumn fx:id="colDuration" text="Duration (h)" prefWidth="110"/>
-                            <TableColumn fx:id="colCost" text="Expected Cost ($)" prefWidth="170"/>
-                            <TableColumn fx:id="colKpiWeight" text="KPI Weight" prefWidth="100"/>
-                            <TableColumn fx:id="colActions" text="Actions" prefWidth="100"/>
+                            <TableColumn fx:id="colName" text="Название" prefWidth="200"/>
+                            <TableColumn fx:id="colDuration" text="Длительность (ч)" prefWidth="110"/>
+                            <TableColumn fx:id="colCost" text="Ожидаемая стоимость ($)" prefWidth="170"/>
+                            <TableColumn fx:id="colKpiWeight" text="Вес KPI" prefWidth="100"/>
+                            <TableColumn fx:id="colActions" text="Действия" prefWidth="150"/>
                         </columns>
                     </TableView>
                 </VBox>

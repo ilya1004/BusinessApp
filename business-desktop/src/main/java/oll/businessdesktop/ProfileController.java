@@ -49,7 +49,7 @@ public class ProfileController {
             Stage stage = (Stage) usernameLabel.getScene().getWindow();
             Scene scene = new Scene(root, 400, 500);
             stage.setScene(scene);
-            stage.setTitle("Business Desktop - Login");
+            stage.setTitle("Business Desktop — Вход");
             stage.setResizable(false);
             stage.show();
         } catch (IOException e) {
@@ -75,7 +75,7 @@ public class ProfileController {
 
             loadUserKpi();
         } catch (Exception e) {
-            showAlert("Profile load error: " + e.getMessage());
+            showAlert("Ошибка загрузки профиля: " + e.getMessage());
             e.printStackTrace();
         }
     }

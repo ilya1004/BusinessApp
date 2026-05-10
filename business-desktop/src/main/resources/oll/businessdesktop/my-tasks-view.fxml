@@ -13,10 +13,10 @@
         <VBox spacing="10">
             <padding><Insets top="15" bottom="10" left="15" right="15"/></padding>
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="My Tasks" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <Label text="Мои задачи" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <ProgressIndicator fx:id="progressIndicator" visible="false" prefWidth="24" prefHeight="24"/>
-                <Button text="Refresh" onAction="#onRefresh" styleClass="btn-primary"/>
+                <Button text="Обновить" onAction="#onRefresh" styleClass="btn-primary"/>
             </HBox>
             <Label fx:id="statusLabel" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
         </VBox>
@@ -27,11 +27,11 @@
             <VBox spacing="10" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
                 <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS" minHeight="400">
                     <columns>
-                        <TableColumn fx:id="colTaskName" text="Task Name" prefWidth="200"/>
-                        <TableColumn fx:id="colProcessName" text="Process Name" prefWidth="150"/>
-                        <TableColumn fx:id="colDuration" text="Duration (actual / plan), h" prefWidth="170"/>
-                        <TableColumn fx:id="colStatus" text="Status" prefWidth="140"/>
-                        <TableColumn fx:id="colActions" text="Actions" prefWidth="250"/>
+                        <TableColumn fx:id="colTaskName" text="Название задачи" prefWidth="200"/>
+                        <TableColumn fx:id="colProcessName" text="Название процесса" prefWidth="150"/>
+                        <TableColumn fx:id="colDuration" text="Длительность (факт / план), ч" prefWidth="170"/>
+                        <TableColumn fx:id="colStatus" text="Статус" prefWidth="140"/>
+                        <TableColumn fx:id="colActions" text="Действия" prefWidth="250"/>
                     </columns>
                 </TableView>
             </VBox>
@@ -39,21 +39,21 @@
             <VBox spacing="15" prefWidth="280">
                 <VBox fx:id="ratingCard" spacing="10" styleClass="card">
                     <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
-                    <Label text="My Rating" style="-fx-font-size: 13px; -fx-text-fill: -color-fg-muted;"/>
+                    <Label text="Мой рейтинг" style="-fx-font-size: 13px; -fx-text-fill: -color-fg-muted;"/>
                     <Label fx:id="ratingLabel" text="-" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: -color-accent-emphasis;"/>
-                    <Label fx:id="weeklyLabel" text="0 completed this week" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;"/>
-                    <Label fx:id="loadLabel" text="Load: -" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;"/>
+                    <Label fx:id="weeklyLabel" text="0 завершено на этой неделе" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;"/>
+                    <Label fx:id="loadLabel" text="Загрузка: -" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;"/>
                 </VBox>
 
                 <VBox fx:id="chartCard" spacing="10" styleClass="card" VBox.vgrow="ALWAYS">
                     <padding><Insets top="10" bottom="10" left="10" right="10"/></padding>
-                    <Label text="Weekly Activity" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                    <Label text="Недельная активность" style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
                     <LineChart fx:id="activityChart" prefHeight="200" title="" createSymbols="true" legendVisible="false" animated="false">
                         <xAxis>
-                            <CategoryAxis fx:id="chartXAxis" label="Day"/>
+                            <CategoryAxis fx:id="chartXAxis" label="День"/>
                         </xAxis>
                         <yAxis>
-                            <NumberAxis fx:id="chartYAxis" label="Tasks" lowerBound="0" tickUnit="1"/>
+                            <NumberAxis fx:id="chartYAxis" label="Задачи" lowerBound="0" tickUnit="1"/>
                         </yAxis>
                     </LineChart>
                 </VBox>

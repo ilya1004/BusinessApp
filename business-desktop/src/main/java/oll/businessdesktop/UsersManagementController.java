@@ -36,8 +36,8 @@ public class UsersManagementController {
         roleColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().role()));
 
         actionsColumn.setCellFactory(col -> new TableCell<>() {
-            private final Button editButton = new Button("Edit");
-            private final Button deleteButton = new Button("Delete");
+            private final Button editButton = new Button("Редактировать");
+            private final Button deleteButton = new Button("Удалить");
             private final HBox box = new HBox(6, editButton, deleteButton);
 
             {
@@ -87,9 +87,9 @@ public class UsersManagementController {
 
     private void confirmDelete(User user) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete User");
-        confirm.setHeaderText("Delete user " + user.username() + "?");
-        confirm.setContentText("This action cannot be undone.");
+        confirm.setTitle("Удалить пользователя");
+        confirm.setHeaderText("Удалить пользователя " + user.username() + "?");
+        confirm.setContentText("Это действие нельзя отменить.");
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -97,7 +97,7 @@ public class UsersManagementController {
                     ApiService.deleteUser(user.id());
                     loadUsers();
                 } catch (Exception e) {
-                    showAlert("Delete Error", e.getMessage());
+                    showAlert("Ошибка удаления", e.getMessage());
                 }
             }
         });
@@ -106,10 +106,10 @@ public class UsersManagementController {
     @FXML
     private void onCreateUser() {
         Dialog<Boolean> dialog = new Dialog<>();
-        dialog.setTitle("Create User");
-        dialog.setHeaderText("Enter new user details");
+        dialog.setTitle("Создать пользователя");
+        dialog.setHeaderText("Введите данные нового пользователя");
 
-        ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
+        ButtonType createButtonType = new ButtonType("Создать", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -118,20 +118,20 @@ public class UsersManagementController {
         grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
 
         TextField usernameField = new TextField();
-        usernameField.setPromptText("Username");
+        usernameField.setPromptText("Имя пользователя");
         PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Password");
+        passwordField.setPromptText("Пароль");
         TextField firstNameField = new TextField();
-        firstNameField.setPromptText("First Name");
+        firstNameField.setPromptText("Имя");
         TextField lastNameField = new TextField();
-        lastNameField.setPromptText("Last Name");
+        lastNameField.setPromptText("Фамилия");
         ChoiceBox<String> roleChoiceBox = new ChoiceBox<>();
         try {
             List<String> roles = ApiService.getRoles();
             roleChoiceBox.getItems().addAll(roles);
             roleChoiceBox.setValue(roles.isEmpty() ? null : roles.get(0));
         } catch (Exception e) {
-            showAlert("Error", "Could not load roles: " + e.getMessage());
+            showAlert("Ошибка", "Не удалось загрузить роли: " + e.getMessage());
         }
 
         ComboBox<Department> departmentBox = new ComboBox<>();
@@ -142,28 +142,28 @@ public class UsersManagementController {
             @Override
             protected void updateItem(Department d, boolean empty) {
                 super.updateItem(d, empty);
-                setText(d == null ? "No Department" : d.name());
+                setText(d == null ? "Нет отдела" : d.name());
             }
         });
         departmentBox.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(Department d, boolean empty) {
                 super.updateItem(d, empty);
-                setText(d == null ? "No Department" : d.name());
+                setText(d == null ? "Нет отдела" : d.name());
             }
         });
 
-        grid.add(new Label("Username:"), 0, 0);
+        grid.add(new Label("Имя пользователя:"), 0, 0);
         grid.add(usernameField, 1, 0);
-        grid.add(new Label("Password:"), 0, 1);
+        grid.add(new Label("Пароль:"), 0, 1);
         grid.add(passwordField, 1, 1);
-        grid.add(new Label("First Name:"), 0, 2);
+        grid.add(new Label("Имя:"), 0, 2);
         grid.add(firstNameField, 1, 2);
-        grid.add(new Label("Last Name:"), 0, 3);
+        grid.add(new Label("Фамилия:"), 0, 3);
         grid.add(lastNameField, 1, 3);
-        grid.add(new Label("Department:"), 0, 4);
+        grid.add(new Label("Отдел:"), 0, 4);
         grid.add(departmentBox, 1, 4);
-        grid.add(new Label("Role:"), 0, 5);
+        grid.add(new Label("Роль:"), 0, 5);
         grid.add(roleChoiceBox, 1, 5);
 
         dialog.getDialogPane().setContent(grid);
@@ -172,11 +172,11 @@ public class UsersManagementController {
             if (dialogButton == createButtonType) {
                 if (usernameField.getText().isBlank() || passwordField.getText().isBlank() ||
                     firstNameField.getText().isBlank() || lastNameField.getText().isBlank()) {
-                    showAlert("Error", "Fill in all fields");
+                    showAlert("Ошибка", "Заполните все поля");
                     return null;
                 }
                 if (roleChoiceBox.getValue() == null) {
-                    showAlert("Error", "Select a role");
+                    showAlert("Ошибка", "Выберите роль");
                     return null;
                 }
                 try {
@@ -192,7 +192,7 @@ public class UsersManagementController {
                     loadUsers();
                     return true;
                 } catch (Exception e) {
-                    showAlert("Creation Error", e.getMessage());
+                    showAlert("Ошибка создания", e.getMessage());
                     return null;
                 }
             }
@@ -204,10 +204,10 @@ public class UsersManagementController {
 
     private void editUser(User user) {
         Dialog<Boolean> dialog = new Dialog<>();
-        dialog.setTitle("Edit User");
-        dialog.setHeaderText("Edit user: " + user.username());
+        dialog.setTitle("Редактировать пользователя");
+        dialog.setHeaderText("Редактирование: " + user.username());
 
-        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveButtonType = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -223,7 +223,7 @@ public class UsersManagementController {
             roleChoiceBox.getItems().addAll(roles);
             roleChoiceBox.setValue(user.role());
         } catch (Exception e) {
-            showAlert("Error", "Could not load roles: " + e.getMessage());
+            showAlert("Ошибка", "Не удалось загрузить роли: " + e.getMessage());
         }
 
         ComboBox<Department> departmentBox = new ComboBox<>();
@@ -234,24 +234,24 @@ public class UsersManagementController {
             @Override
             protected void updateItem(Department d, boolean empty) {
                 super.updateItem(d, empty);
-                setText(d == null ? "No Department" : d.name());
+                setText(d == null ? "Нет отдела" : d.name());
             }
         });
         departmentBox.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(Department d, boolean empty) {
                 super.updateItem(d, empty);
-                setText(d == null ? "No Department" : d.name());
+                setText(d == null ? "Нет отдела" : d.name());
             }
         });
 
-        grid.add(new Label("First Name:"), 0, 0);
+        grid.add(new Label("Имя:"), 0, 0);
         grid.add(firstNameField, 1, 0);
-        grid.add(new Label("Last Name:"), 0, 1);
+        grid.add(new Label("Фамилия:"), 0, 1);
         grid.add(lastNameField, 1, 1);
-        grid.add(new Label("Department:"), 0, 2);
+        grid.add(new Label("Отдел:"), 0, 2);
         grid.add(departmentBox, 1, 2);
-        grid.add(new Label("Role:"), 0, 3);
+        grid.add(new Label("Роль:"), 0, 3);
         grid.add(roleChoiceBox, 1, 3);
 
         dialog.getDialogPane().setContent(grid);
@@ -259,11 +259,11 @@ public class UsersManagementController {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 if (firstNameField.getText().isBlank() || lastNameField.getText().isBlank()) {
-                    showAlert("Error", "Fill in all fields");
+                    showAlert("Ошибка", "Заполните все поля");
                     return null;
                 }
                 if (roleChoiceBox.getValue() == null) {
-                    showAlert("Error", "Select a role");
+                    showAlert("Ошибка", "Выберите роль");
                     return null;
                 }
                 try {
@@ -278,7 +278,7 @@ public class UsersManagementController {
                     loadUsers();
                     return true;
                 } catch (Exception e) {
-                    showAlert("Edit Error", e.getMessage());
+                    showAlert("Ошибка редактирования", e.getMessage());
                     return null;
                 }
             }
@@ -294,7 +294,7 @@ public class UsersManagementController {
                 List<User> users = ApiService.getAllUsers();
                 usersTable.getItems().setAll(users);
             } catch (Exception e) {
-                showAlert("Load Error", e.getMessage());
+                showAlert("Ошибка загрузки", e.getMessage());
             }
         });
     }

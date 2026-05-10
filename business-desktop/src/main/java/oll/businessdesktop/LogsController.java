@@ -11,6 +11,7 @@ import oll.businessdesktop.model.AppLog;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class LogsController {
 
@@ -100,10 +101,12 @@ public class LogsController {
     }
 
     private void loadLogs() {
-        statusLabel.setText("Loading logs...");
+        statusLabel.setText("Загрузка логов...");
         new Thread(() -> {
             try {
-                List<AppLog> logs = ApiService.getLogs(currentPage, pageSize, currentLevel);
+                Map<String, Object> result = ApiService.getLogs(currentPage, pageSize, currentLevel);
+                List<AppLog> logs = (List<AppLog>) result.get("logs");
+                totalElements = (int) result.get("totalElements");
                 List<LogRow> rows = new ArrayList<>();
                 for (AppLog log : logs) {
                     rows.add(new LogRow(
@@ -116,12 +119,12 @@ public class LogsController {
                 }
                 Platform.runLater(() -> {
                     logsTable.setItems(FXCollections.observableArrayList(rows));
-                    pageLabel.setText("Page " + (currentPage + 1));
-                    totalLabel.setText("Total: " + totalElements);
-                    statusLabel.setText(rows.size() + " logs loaded");
+                    pageLabel.setText("Стр. " + (currentPage + 1));
+                    totalLabel.setText("Всего: " + totalElements);
+                    statusLabel.setText("Загружено " + rows.size() + " записей");
                 });
             } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Failed to load logs: " + e.getMessage()));
+                Platform.runLater(() -> statusLabel.setText("Ошибка загрузки логов: " + e.getMessage()));
             }
         }).start();
     }

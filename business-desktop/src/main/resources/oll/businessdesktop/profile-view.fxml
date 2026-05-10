@@ -37,25 +37,25 @@
             </HBox>
             <Separator/>
             <GridPane hgap="10" vgap="8">
-                <Label text="Username" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <Label text="Имя пользователя" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <Label fx:id="usernameLabel" text="-" style="-fx-font-size: 14px; -fx-text-fill: -color-fg-default;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                <Label text="Department" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label text="Отдел" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <Label fx:id="deptLabel" text="-" style="-fx-font-size: 14px; -fx-text-fill: -color-fg-default;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
             </GridPane>
         </VBox>
 
         <!-- KPI Stats -->
         <VBox fx:id="statsContainer" spacing="10" visible="false">
-            <Label text="Performance" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;"/>
+            <Label text="Производительность" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;"/>
             <HBox spacing="10" HBox.hgrow="ALWAYS">
                 <VBox styleClass="stat-card" alignment="CENTER" prefWidth="0" HBox.hgrow="ALWAYS">
                     <padding><Insets top="12" bottom="12" left="10" right="10"/></padding>
-                    <Label text="Rating" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                    <Label text="Рейтинг" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
                     <Label fx:id="ratingValLabel" text="-" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-accent-emphasis;"/>
                 </VBox>
                 <VBox styleClass="stat-card" alignment="CENTER" prefWidth="0" HBox.hgrow="ALWAYS">
                     <padding><Insets top="12" bottom="12" left="10" right="10"/></padding>
-                    <Label text="Weekly Done" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                    <Label text="За неделю" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
                     <Label fx:id="weeklyValLabel" text="-" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-success-emphasis;"/>
                 </VBox>
             </HBox>
@@ -67,20 +67,20 @@
     <VBox spacing="15" HBox.hgrow="ALWAYS">
         <VBox fx:id="chartContainer" spacing="10" styleClass="card" VBox.vgrow="ALWAYS" visible="false">
             <padding><Insets top="15" bottom="15" left="15" right="15"/></padding>
-            <Label text="Rating History (7 days)" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;"/>
+            <Label text="История рейтинга (7 дней)" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;"/>
             <LineChart fx:id="ratingChart" prefHeight="280" title="" createSymbols="true" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
                 <xAxis>
-                    <CategoryAxis fx:id="chartXAxis" label="Date" tickLabelRotation="-45"/>
+                    <CategoryAxis fx:id="chartXAxis" label="Дата" tickLabelRotation="-45"/>
                 </xAxis>
                 <yAxis>
-                    <NumberAxis fx:id="chartYAxis" label="Rating" lowerBound="0" upperBound="100" tickUnit="20"/>
+                    <NumberAxis fx:id="chartYAxis" label="Рейтинг" lowerBound="0" upperBound="100" tickUnit="20"/>
                 </yAxis>
             </LineChart>
         </VBox>
 
         <HBox spacing="10" alignment="CENTER_RIGHT">
-            <Button text="Refresh" onAction="#onRefresh" styleClass="profile-button"/>
-            <Button text="Logout" onAction="#onLogout" styleClass="logout-button"/>
+            <Button text="Обновить" onAction="#onRefresh" styleClass="profile-button"/>
+            <Button text="Выйти" onAction="#onLogout" styleClass="logout-button"/>
         </HBox>
     </VBox>
 </HBox>

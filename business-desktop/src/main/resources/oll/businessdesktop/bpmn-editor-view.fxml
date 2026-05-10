@@ -9,13 +9,13 @@
             fx:controller="oll.businessdesktop.BpmnEditorController">
     <top>
         <ToolBar fx:id="toolBar">
-            <Button text="New Diagram" onAction="#onNewDiagram"/>
-            <Button text="Save XML" onAction="#onSaveXML"/>
+            <Button text="Новая диаграмма" onAction="#onNewDiagram"/>
+            <Button text="Сохранить XML" onAction="#onSaveXML"/>
             <Separator/>
-            <Button text="Open .bpmn" onAction="#onOpenFile"/>
+            <Button text="Открыть .bpmn" onAction="#onOpenFile"/>
             <Separator/>
-            <Button text="Export SVG" onAction="#onExportSVG"/>
-            <Button text="Open SVG Folder" onAction="#onOpenSvgFolder"/>
+            <Button text="Экспорт SVG" onAction="#onExportSVG"/>
+            <Button text="Открыть папку SVG" onAction="#onOpenSvgFolder"/>
         </ToolBar>
     </top>
     <center>

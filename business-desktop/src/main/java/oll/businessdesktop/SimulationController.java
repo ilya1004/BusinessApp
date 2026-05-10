@@ -67,23 +67,23 @@ public class SimulationController {
     }
 
     private void loadModelList() {
-        statusLabel.setText("Loading process models...");
+        statusLabel.setText("Загрузка моделей процессов...");
         new Thread(() -> {
             try {
                 allModels = ApiService.getAllProcessModels();
                 Platform.runLater(() -> {
                     if (allModels == null || allModels.isEmpty()) {
                         modelSelector.setItems(FXCollections.emptyObservableList());
-                        statusLabel.setText("No process models found");
+                        statusLabel.setText("Модели процессов не найдены");
                         return;
                     }
                     modelSelector.setItems(FXCollections.observableArrayList(
                             allModels.stream().map(ProcessModel::name).toList()));
-                    statusLabel.setText(allModels.size() + " model(s) available");
+                    statusLabel.setText("Доступно: " + allModels.size() + " моделей");
                 });
             } catch (Exception e) {
                 Platform.runLater(() ->
-                        statusLabel.setText("Failed to load models: " + e.getMessage()));
+                        statusLabel.setText("Ошибка загрузки моделей: " + e.getMessage()));
             }
         }).start();
     }
@@ -109,7 +109,7 @@ public class SimulationController {
 
         progressIndicator.setVisible(true);
         runBtn.setDisable(true);
-        statusLabel.setText("Running simulation...");
+        statusLabel.setText("Запуск симуляции...");
 
         Task<SimulationResponse> simTask = new Task<>() {
             @Override
@@ -125,14 +125,14 @@ public class SimulationController {
             if (result != null) {
                 populateChart(result);
                 populateTable(result.taskPredictions());
-                statusLabel.setText("Simulation complete for " + result.modelName());
+                statusLabel.setText("Симуляция завершена для " + result.modelName());
             }
         });
 
         simTask.setOnFailed(e -> {
             progressIndicator.setVisible(false);
             runBtn.setDisable(false);
-            statusLabel.setText("Simulation failed: " + simTask.getException().getMessage());
+            statusLabel.setText("Симуляция не удалась: " + simTask.getException().getMessage());
         });
 
         new Thread(simTask).start();
@@ -142,21 +142,21 @@ public class SimulationController {
         comparisonChart.getData().clear();
 
         XYChart.Series<String, Number> baseline = new XYChart.Series<>();
-        baseline.setName("Baseline");
+        baseline.setName("Базовый");
         XYChart.Series<String, Number> scenario = new XYChart.Series<>();
-        scenario.setName("Scenario");
+        scenario.setName("Сценарий");
 
         if (result.cycleTime() != null) {
-            baseline.getData().add(new XYChart.Data<>("Cycle Time", result.cycleTime().baseline()));
-            scenario.getData().add(new XYChart.Data<>("Cycle Time", result.cycleTime().scenario()));
+            baseline.getData().add(new XYChart.Data<>("Время цикла", result.cycleTime().baseline()));
+            scenario.getData().add(new XYChart.Data<>("Время цикла", result.cycleTime().scenario()));
         }
         if (result.totalCost() != null) {
-            baseline.getData().add(new XYChart.Data<>("Total Cost", result.totalCost().baseline()));
-            scenario.getData().add(new XYChart.Data<>("Total Cost", result.totalCost().scenario()));
+            baseline.getData().add(new XYChart.Data<>("Общая стоимость", result.totalCost().baseline()));
+            scenario.getData().add(new XYChart.Data<>("Общая стоимость", result.totalCost().scenario()));
         }
         if (result.resourceLoad() != null) {
-            baseline.getData().add(new XYChart.Data<>("Resource Load", result.resourceLoad().baseline()));
-            scenario.getData().add(new XYChart.Data<>("Resource Load", result.resourceLoad().scenario()));
+            baseline.getData().add(new XYChart.Data<>("Загрузка ресурсов", result.resourceLoad().baseline()));
+            scenario.getData().add(new XYChart.Data<>("Загрузка ресурсов", result.resourceLoad().scenario()));
         }
 
         comparisonChart.getData().addAll(baseline, scenario);

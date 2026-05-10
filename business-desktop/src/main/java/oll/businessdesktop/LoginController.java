@@ -24,7 +24,7 @@ public class LoginController {
         String password = passwordField.getText();
 
         if (username.isEmpty() || password.isEmpty()) {
-            showError("Fill in all fields");
+            showError("Заполните все поля");
             return;
         }
 
@@ -36,13 +36,13 @@ public class LoginController {
             Stage stage = (Stage) usernameField.getScene().getWindow();
             Scene scene = new Scene(root, 1280, 800);
             stage.setScene(scene);
-            stage.setTitle("Business Desktop");
+            stage.setTitle("Business Desktop — Панель управления");
             stage.show();
         } catch (IOException | InterruptedException e) {
-            showError("Server connection error");
+            showError("Ошибка подключения к серверу");
             e.printStackTrace();
         } catch (RuntimeException e) {
-            showError("Invalid username or password");
+            showError("Неверное имя пользователя или пароль");
         }
     }
 

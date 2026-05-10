@@ -730,7 +730,7 @@ public class ApiService {
         }
     }
 
-    public static List<oll.businessdesktop.model.AppLog> getLogs(int page, int size, String level) throws Exception {
+    public static Map<String, Object> getLogs(int page, int size, String level) throws Exception {
         String levelParam = (level != null && !level.equals("ALL")) ? "&level=" + level : "";
         String url = BASE_URL + "/logs?page=" + page + "&size=" + size + levelParam;
         HttpRequest request = HttpRequest.newBuilder()
@@ -743,9 +743,11 @@ public class ApiService {
         if (response.statusCode() == 200) {
             Map<String, Object> result = objectMapper.readValue(response.body(), Map.class);
             List<Map<String, Object>> content = (List<Map<String, Object>>) result.get("content");
-            return content.stream()
-                    .map(m -> objectMapper.convertValue(m, oll.businessdesktop.model.AppLog.class))
+            List<AppLog> logs = content.stream()
+                    .map(m -> objectMapper.convertValue(m, AppLog.class))
                     .toList();
+            int totalElements = ((Number) result.get("totalElements")).intValue();
+            return Map.of("logs", logs, "totalElements", totalElements);
         } else {
             throw new RuntimeException("Failed to get logs: " + response.body());
         }

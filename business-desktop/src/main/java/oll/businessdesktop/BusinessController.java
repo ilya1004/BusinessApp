@@ -9,6 +9,6 @@ public class BusinessController {
 
     @FXML
     protected void onHelloButtonClick() {
-        welcomeText.setText("Welcome to JavaFX Application!");
+        welcomeText.setText("Добро пожаловать в BusinessApp!");
     }
 }

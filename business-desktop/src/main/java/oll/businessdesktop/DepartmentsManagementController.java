@@ -35,10 +35,10 @@ public class DepartmentsManagementController {
     @FXML
     private void onCreateDepartment() {
         Dialog<Department> dialog = new Dialog<>();
-        dialog.setTitle("Create Department");
-        dialog.setHeaderText("Enter new department details");
+        dialog.setTitle("Создать отдел");
+        dialog.setHeaderText("Введите данные нового отдела");
 
-        ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
+        ButtonType createButtonType = new ButtonType("Создать", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -47,22 +47,22 @@ public class DepartmentsManagementController {
         grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
 
         TextField nameField = new TextField();
-        nameField.setPromptText("Name");
+        nameField.setPromptText("Название");
 
         ComboBox<Department> parentBox = new ComboBox<>();
         parentBox.getItems().addAll(allDepartments);
         parentBox.setConverter(new StringConverter<>() {
             @Override
             public String toString(Department d) {
-                return d == null ? "No parent" : d.name();
+                return d == null ? "Нет родителя" : d.name();
             }
             @Override
             public Department fromString(String s) { return null; }
         });
 
-        grid.add(new Label("Name:"), 0, 0);
+        grid.add(new Label("Название:"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Parent:"), 0, 1);
+        grid.add(new Label("Родитель:"), 0, 1);
         grid.add(parentBox, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
@@ -70,7 +70,7 @@ public class DepartmentsManagementController {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == createButtonType) {
                 if (nameField.getText().isBlank()) {
-                    showAlert("Error", "Enter a name");
+                    showAlert("Ошибка", "Введите название");
                     return null;
                 }
                 try {
@@ -80,7 +80,7 @@ public class DepartmentsManagementController {
                             selectedParent != null ? selectedParent.id() : null
                     );
                 } catch (Exception e) {
-                    showAlert("Creation Error", e.getMessage());
+                    showAlert("Ошибка создания", e.getMessage());
                     return null;
                 }
             }
@@ -96,16 +96,16 @@ public class DepartmentsManagementController {
     private void onEditDepartment() {
         TreeItem<Department> selected = departmentsTree.getSelectionModel().getSelectedItem();
         if (selected == null || selected.getValue() == null || selected.getValue().id() == null) {
-            showAlert("Warning", "Select a department to edit");
+            showAlert("Предупреждение", "Выберите отдел для редактирования");
             return;
         }
         Department dept = selected.getValue();
 
         Dialog<Boolean> dialog = new Dialog<>();
-        dialog.setTitle("Edit Department");
-        dialog.setHeaderText("Edit department details");
+        dialog.setTitle("Редактировать отдел");
+        dialog.setHeaderText("Редактирование отдела");
 
-        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveButtonType = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
@@ -114,23 +114,23 @@ public class DepartmentsManagementController {
         grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
 
         TextField nameField = new TextField(dept.name());
-        nameField.setPromptText("Name");
+        nameField.setPromptText("Название");
 
         ComboBox<Department> parentBox = new ComboBox<>();
         parentBox.getItems().addAll(allDepartments);
         parentBox.setConverter(new StringConverter<>() {
             @Override
             public String toString(Department d) {
-                return d == null ? "No parent" : d.name();
+                return d == null ? "Нет родителя" : d.name();
             }
             @Override
             public Department fromString(String s) { return null; }
         });
         parentBox.setValue(dept.parentId() != null ? departmentMap.get(dept.parentId()) : null);
 
-        grid.add(new Label("Name:"), 0, 0);
+        grid.add(new Label("Название:"), 0, 0);
         grid.add(nameField, 1, 0);
-        grid.add(new Label("Parent:"), 0, 1);
+        grid.add(new Label("Родитель:"), 0, 1);
         grid.add(parentBox, 1, 1);
 
         dialog.getDialogPane().setContent(grid);
@@ -138,7 +138,7 @@ public class DepartmentsManagementController {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 if (nameField.getText().isBlank()) {
-                    showAlert("Error", "Enter a name");
+                    showAlert("Ошибка", "Введите название");
                     return false;
                 }
                 try {
@@ -150,7 +150,7 @@ public class DepartmentsManagementController {
                     );
                     return true;
                 } catch (Exception e) {
-                    showAlert("Update Error", e.getMessage());
+                    showAlert("Ошибка обновления", e.getMessage());
                     return false;
                 }
             }
@@ -166,7 +166,7 @@ public class DepartmentsManagementController {
     private void onDeleteDepartment() {
         TreeItem<Department> selected = departmentsTree.getSelectionModel().getSelectedItem();
         if (selected == null || selected.getValue() == null || selected.getValue().id() == null) {
-            showAlert("Warning", "Select a department to delete");
+            showAlert("Предупреждение", "Выберите отдел для удаления");
             return;
         }
         Department dept = selected.getValue();
@@ -176,14 +176,14 @@ public class DepartmentsManagementController {
             String childrenNames = children.stream().map(Department::name).collect(Collectors.joining(", "));
 
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-            confirm.setTitle("Delete Department");
-            confirm.setHeaderText("Delete department " + dept.name() + "?");
+            confirm.setTitle("Удалить отдел");
+            confirm.setHeaderText("Удалить отдел " + dept.name() + "?");
 
             if (!children.isEmpty()) {
-                confirm.setContentText("The department has children: " + childrenNames +
-                        ".\n\nWhen deleted, child departments will be reassigned to the parent department of the deleted one (or become root-level if there is no parent).");
+                confirm.setContentText("Отдел имеет дочерние отделы: " + childrenNames +
+                        ".\n\nПри удалении дочерние отделы будут переназначены родительскому отделу удаляемого (или станут корневыми, если родителя нет).");
             } else {
-                confirm.setContentText("This action cannot be undone.");
+                confirm.setContentText("Это действие нельзя отменить.");
             }
 
             confirm.showAndWait().ifPresent(response -> {
@@ -192,12 +192,12 @@ public class DepartmentsManagementController {
                         ApiService.deleteDepartment(dept.id());
                         loadDepartments();
                     } catch (Exception e) {
-                        showAlert("Delete Error", e.getMessage());
+                        showAlert("Ошибка удаления", e.getMessage());
                     }
                 }
             });
         } catch (Exception e) {
-            showAlert("Error", "Could not check child departments: " + e.getMessage());
+            showAlert("Ошибка", "Не удалось проверить дочерние отделы: " + e.getMessage());
         }
     }
 
@@ -213,7 +213,7 @@ public class DepartmentsManagementController {
                 }
 
                 TreeItem<Department> root = new TreeItem<>();
-                root.setValue(new Department(null, "Organization", null));
+                root.setValue(new Department(null, "Организация", null));
                 Map<Long, TreeItem<Department>> itemMap = new HashMap<>();
 
                 for (Department d : depts) {
@@ -234,7 +234,7 @@ public class DepartmentsManagementController {
                 root.setExpanded(true);
                 expandAll(root);
             } catch (Exception e) {
-                showAlert("Load Error", e.getMessage());
+                showAlert("Ошибка загрузки", e.getMessage());
             }
         });
     }

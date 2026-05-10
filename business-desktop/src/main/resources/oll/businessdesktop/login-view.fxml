@@ -18,15 +18,15 @@
         <Label text="Business Desktop" styleClass="login-title"/>
 
         <VBox spacing="10" styleClass="login-fields">
-            <Label text="Username" styleClass="field-label"/>
-            <TextField fx:id="usernameField" promptText="Enter username" styleClass="login-field"/>
+            <Label text="Имя пользователя" styleClass="field-label"/>
+            <TextField fx:id="usernameField" promptText="Введите имя пользователя" styleClass="login-field"/>
 
-            <Label text="Password" styleClass="field-label"/>
-<!--            <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="login-field"/>-->
-            <TextField fx:id="passwordField" promptText="Enter password" styleClass="login-field"/>
+            <Label text="Пароль" styleClass="field-label"/>
+<!--            <PasswordField fx:id="passwordField" promptText="Введите пароль" styleClass="login-field"/>-->
+            <TextField fx:id="passwordField" promptText="Введите пароль" styleClass="login-field"/>
         </VBox>
 
-        <Button text="Sign In" onAction="#onLogin" styleClass="login-button" maxWidth="Infinity"/>
+        <Button text="Войти" onAction="#onLogin" styleClass="login-button" maxWidth="Infinity"/>
 
         
         <Label fx:id="errorLabel" text="" styleClass="error-label" visible="false"/>

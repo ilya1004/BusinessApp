@@ -53,7 +53,7 @@ public class MyTasksController {
 
     private void loadMyTasks() {
         showLoading(true);
-        statusLabel.setText("Loading tasks...");
+        statusLabel.setText("Загрузка задач...");
 
         javafx.concurrent.Task<List<Task>> fetchTask = new javafx.concurrent.Task<>() {
             @Override
@@ -69,13 +69,13 @@ public class MyTasksController {
                 List<MyTaskRow> rows = new java.util.ArrayList<>(tasks.stream().map(this::toRow).toList());
                 rows.sort(Comparator.comparing(MyTaskRow::getId));
                 tasksTable.setItems(FXCollections.observableArrayList(rows));
-                statusLabel.setText(rows.size() + " task(s)");
+                statusLabel.setText(rows.size() + " задач(а)");
             }
         });
 
         fetchTask.setOnFailed(e -> {
             showLoading(false);
-            showError("Failed to load tasks: " + fetchTask.getException().getMessage());
+            showError("Ошибка загрузки задач: " + fetchTask.getException().getMessage());
         });
 
         new Thread(fetchTask).start();
@@ -89,7 +89,7 @@ public class MyTasksController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     ratingLabel.setText("-");
-                    weeklyLabel.setText("Unavailable");
+                    weeklyLabel.setText("Недоступно");
                     loadLabel.setText("");
                 });
             }
@@ -103,10 +103,10 @@ public class MyTasksController {
         ratingLabel.setText(String.format("%.0f", rating));
 
         int weekly = stats.weeklyCompleted() != null ? stats.weeklyCompleted() : 0;
-        weeklyLabel.setText(weekly + " completed this week");
+        weeklyLabel.setText(weekly + " завершено на этой неделе");
 
         double load = stats.loadPercent() != null ? stats.loadPercent() : 0.0;
-        loadLabel.setText(String.format("Load: %.0f%%", load));
+        loadLabel.setText(String.format("Загрузка: %.0f%%", load));
 
         if (stats.ratingHistory() != null && !stats.ratingHistory().isEmpty()) {
             XYChart.Series<String, Number> series = new XYChart.Series<>();
@@ -133,7 +133,7 @@ public class MyTasksController {
     }
 
     void setTaskStatus(MyTaskRow row, String status) {
-        statusLabel.setText("Updating status...");
+        statusLabel.setText("Обновление статуса...");
         showLoading(true);
 
         javafx.concurrent.Task<Task> updateTask = new javafx.concurrent.Task<>() {
@@ -151,13 +151,13 @@ public class MyTasksController {
                 if (idx >= 0) {
                     tasksTable.getItems().set(idx, toRow(updated));
                 }
-                statusLabel.setText("Status set to " + status);
+                statusLabel.setText("Статус изменён на " + status);
             }
         });
 
         updateTask.setOnFailed(e -> {
             showLoading(false);
-            showError("Failed to update status: " + updateTask.getException().getMessage());
+            showError("Ошибка обновления статуса: " + updateTask.getException().getMessage());
         });
 
         new Thread(updateTask).start();
@@ -167,9 +167,9 @@ public class MyTasksController {
         if (row == null || "COMPLETED".equals(row.getStatus())) return;
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Complete Task");
-        confirm.setHeaderText("Complete: " + row.getTaskName());
-        confirm.setContentText("This action cannot be undone. The task status will be locked.");
+        confirm.setTitle("Завершить задачу");
+        confirm.setHeaderText("Завершить: " + row.getTaskName());
+        confirm.setContentText("Это действие нельзя отменить. Статус задачи будет заблокирован.");
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -179,7 +179,7 @@ public class MyTasksController {
     }
 
     private void completeTaskConfirmed(MyTaskRow row) {
-        statusLabel.setText("Completing task...");
+        statusLabel.setText("Завершение задачи...");
         showLoading(true);
 
         javafx.concurrent.Task<Task> completeTask = new javafx.concurrent.Task<>() {
@@ -197,14 +197,14 @@ public class MyTasksController {
                 if (idx >= 0) {
                     tasksTable.getItems().set(idx, toRow(updated));
                 }
-                statusLabel.setText("Task completed and locked");
+                statusLabel.setText("Задача завершена и заблокирована");
                 loadUserStats();
             }
         });
 
         completeTask.setOnFailed(e -> {
             showLoading(false);
-            showError("Failed to complete: " + completeTask.getException().getMessage());
+            showError("Ошибка завершения: " + completeTask.getException().getMessage());
         });
 
         new Thread(completeTask).start();
@@ -214,14 +214,14 @@ public class MyTasksController {
         if (row == null) return;
 
         Dialog<Integer> dialog = new Dialog<>();
-        dialog.setTitle("Log Time");
-        dialog.setHeaderText("Log worked time for: " + row.getTaskName());
+        dialog.setTitle("Учёт времени");
+        dialog.setHeaderText("Учёт времени для: " + row.getTaskName());
 
-        ButtonType saveBtn = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType saveBtn = new ButtonType("Сохранить", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveBtn, ButtonType.CANCEL);
 
         TextField hoursField = new TextField();
-        hoursField.setPromptText("Hours worked");
+        hoursField.setPromptText("Отработано часов");
 
         int planned = row.getTask().plannedDuration() != null ? row.getTask().plannedDuration() / 60 : 0;
         hoursField.setText(String.valueOf(planned));
@@ -232,7 +232,7 @@ public class MyTasksController {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
-        grid.add(new Label("Time (h):"), 0, 0);
+        grid.add(new Label("Время (ч):"), 0, 0);
         grid.add(hoursField, 1, 0);
 
         dialog.getDialogPane().setContent(grid);
@@ -251,7 +251,7 @@ public class MyTasksController {
 
         dialog.showAndWait().ifPresent(minutes -> {
             if (minutes == null) return;
-            statusLabel.setText("Logging time...");
+            statusLabel.setText("Сохранение времени...");
             showLoading(true);
 
             javafx.concurrent.Task<Task> logTask = new javafx.concurrent.Task<>() {
@@ -269,13 +269,13 @@ public class MyTasksController {
                     if (idx >= 0) {
                         tasksTable.getItems().set(idx, toRow(updated));
                     }
-                    statusLabel.setText("Time logged (" + (minutes / 60) + " h)");
+                    statusLabel.setText("Время сохранено (" + (minutes / 60) + " ч)");
                 }
             });
 
             logTask.setOnFailed(e -> {
                 showLoading(false);
-                showError("Failed to log time: " + logTask.getException().getMessage());
+                showError("Ошибка сохранения времени: " + logTask.getException().getMessage());
             });
 
             new Thread(logTask).start();
@@ -295,7 +295,7 @@ public class MyTasksController {
     private void showError(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, message);
-            alert.setTitle("Error");
+            alert.setTitle("Ошибка");
             alert.showAndWait();
         });
     }
@@ -378,8 +378,8 @@ public class MyTasksController {
 
     private static class ActionCell extends TableCell<MyTaskRow, Void> {
         private final HBox box = new HBox(6);
-        private final Button logTimeBtn = new Button("Log Time");
-        private final Button completeBtn = new Button("Complete");
+        private final Button logTimeBtn = new Button("Учёт времени");
+        private final Button completeBtn = new Button("Завершить");
         private final MyTasksController controller;
 
         ActionCell(MyTasksController controller) {

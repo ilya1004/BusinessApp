@@ -15,15 +15,15 @@
     <left>
         <VBox spacing="5" styleClass="sidebar" xmlns="http://javafx.com/fxml">
             <padding><Insets top="15" bottom="15" left="10" right="10"/></padding>
-            <Button text="Process Designer" onAction="#onProcessDesignerTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Process View" onAction="#onProcessViewTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Process Instances" onAction="#onProcessInstancesTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Simulation" onAction="#onSimulationTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="My Tasks" onAction="#onMyTasksTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Users" onAction="#onUsersTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Organization" onAction="#onDepartmentsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="Logs" onAction="#onLogsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
-            <Button text="BPMN Editor" onAction="#onBpmnTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Редактор процессов" onAction="#onProcessDesignerTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Модели процессов" onAction="#onProcessViewTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Процессы" onAction="#onProcessInstancesTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Симуляция" onAction="#onSimulationTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Мои задачи" onAction="#onMyTasksTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Пользователи" onAction="#onUsersTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Организация" onAction="#onDepartmentsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="Логи" onAction="#onLogsTab" maxWidth="Infinity" styleClass="sidebar-button"/>
+            <Button text="BPMN редактор" onAction="#onBpmnTab" maxWidth="Infinity" styleClass="sidebar-button"/>
         </VBox>
     </left>
     <!-- Content area with top bar -->
@@ -35,8 +35,8 @@
                     <HBox spacing="10" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
                         <Label fx:id="pageTitle" text="BPMN Editor" styleClass="page-title"/>
                     </HBox>
-                    <Button text="Light/Dark" onAction="#onToggleTheme" styleClass="profile-button"/>
-                    <Button text="Profile" onAction="#onProfileClick" styleClass="profile-button"/>
+                    <Button text="Светлая/Тёмная" onAction="#onToggleTheme" styleClass="profile-button"/>
+                    <Button text="Профиль" onAction="#onProfileClick" styleClass="profile-button"/>
                 </HBox>
             </top>
             <center>

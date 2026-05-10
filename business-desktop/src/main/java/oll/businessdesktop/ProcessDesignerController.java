@@ -73,7 +73,7 @@ public class ProcessDesignerController {
             bridge = new JavaBridge(LOG_FILE, this);
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Could not initialize: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Ошибка инициализации: " + e.getMessage());
             return;
         }
 
@@ -106,9 +106,9 @@ public class ProcessDesignerController {
     @FXML
     private void onNewDiagram() {
         TextInputDialog dialog = new TextInputDialog("Diagram_" + LocalDateTime.now().format(TIMESTAMP_FMT));
-        dialog.setTitle("New Diagram");
-        dialog.setHeaderText("Enter diagram name");
-        dialog.setContentText("Name:");
+        dialog.setTitle("Новая диаграмма");
+        dialog.setHeaderText("Введите название диаграммы");
+        dialog.setContentText("Название:");
 
         dialog.showAndWait().ifPresent(name -> {
             currentDiagramName = name.isBlank()
@@ -132,9 +132,9 @@ public class ProcessDesignerController {
                 if (models == null || models.isEmpty()) {
                     Platform.runLater(() -> {
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("Open from DB");
+                        alert.setTitle("Открыть из БД");
                         alert.setHeaderText(null);
-                        alert.setContentText("No process models found in database.");
+                        alert.setContentText("Модели процессов не найдены в базе данных.");
                         alert.showAndWait();
                     });
                     return;
@@ -142,9 +142,9 @@ public class ProcessDesignerController {
 
                 Platform.runLater(() -> {
                     ChoiceDialog<String> dialog = new ChoiceDialog<>(models.get(0).name(), models.stream().map(ProcessModel::name).toList());
-                    dialog.setTitle("Open from DB");
-                    dialog.setHeaderText("Select a diagram to open");
-                    dialog.setContentText("Diagram:");
+                    dialog.setTitle("Открыть из БД");
+                    dialog.setHeaderText("Выберите диаграмму для открытия");
+                    dialog.setContentText("Диаграмма:");
 
                     dialog.showAndWait().ifPresent(selectedName -> {
                         ProcessModel selected = models.stream().filter(m -> m.name().equals(selectedName)).findFirst().orElse(null);
@@ -167,14 +167,14 @@ public class ProcessDesignerController {
                         if (Files.exists(bpmnFile)) {
                             try {
                                 xml = Files.readString(bpmnFile, StandardCharsets.UTF_8);
-                                lastSavedLabel.setText("Loaded from local file");
+                                lastSavedLabel.setText("Загружено из локального файла");
                             } catch (IOException e) {
                                 xml = selected.bpmnXml();
                                 try {
                                     Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8);
-                                    lastSavedLabel.setText("Restored from DB to local file");
+                                    lastSavedLabel.setText("Восстановлено из БД в локальный файл");
                                 } catch (IOException ex) {
-                                    lastSavedLabel.setText("Using BPMN from DB (could not save file)");
+                                    lastSavedLabel.setText("Используется BPMN из БД (не удалось сохранить файл)");
                                 }
                             }
                         } else {
@@ -182,7 +182,7 @@ public class ProcessDesignerController {
                             try {
                                 Files.createDirectories(BPMN_DIR);
                                 Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8);
-                                lastSavedLabel.setText("Created from DB and saved locally");
+                                lastSavedLabel.setText("Создано из БД и сохранено локально");
                             } catch (IOException e) {
                                 lastSavedLabel.setText("Using BPMN from DB (could not save file)");
                             }
@@ -201,9 +201,9 @@ public class ProcessDesignerController {
                 System.err.println("[DB] Failed to load process models: " + e.getMessage());
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Open from DB");
+                    alert.setTitle("Открыть из БД");
                     alert.setHeaderText(null);
-                    alert.setContentText("Failed to load diagrams: " + e.getMessage());
+                    alert.setContentText("Ошибка загрузки диаграмм: " + e.getMessage());
                     alert.showAndWait();
                 });
             }
@@ -215,7 +215,7 @@ public class ProcessDesignerController {
         Stage stage = (Stage) webView.getScene().getWindow();
         FileChooser chooser = new FileChooser();
         chooser.setInitialDirectory(BPMN_DIR.toFile());
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BPMN Files", "*.bpmn", "*.xml"));
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BPMN файлы", "*.bpmn", "*.xml"));
         File file = chooser.showOpenDialog(stage);
         if (file != null) {
             try {
@@ -239,9 +239,9 @@ public class ProcessDesignerController {
                                         taskDefinitions.put(td.bpmnElementId(), td);
                                     }
                                 }
-                                lastSavedLabel.setText("Linked to DB model id=" + existing.id());
+                                lastSavedLabel.setText("Привязано к модели БД id=" + existing.id());
                             } else {
-                                lastSavedLabel.setText("New diagram (not in DB)");
+                                lastSavedLabel.setText("Новая диаграмма (не в БД)");
                             }
                         });
                     } catch (Exception e) {
@@ -250,7 +250,7 @@ public class ProcessDesignerController {
                 }).start();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Could not open file: " + ex.getMessage());
+                showAlert(Alert.AlertType.ERROR, "Ошибка открытия файла: " + ex.getMessage());
             }
         }
     }
@@ -260,7 +260,7 @@ public class ProcessDesignerController {
         try {
             engine.executeScript("window.saveXML()");
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Could not trigger save: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Ошибка сохранения: " + e.getMessage());
         }
     }
 
@@ -277,7 +277,7 @@ public class ProcessDesignerController {
                 Desktop.getDesktop().open(SVG_DIR.toFile());
             }
         } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Could not open folder: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Ошибка открытия папки: " + e.getMessage());
         }
     }
 
@@ -334,12 +334,12 @@ public class ProcessDesignerController {
                         ex.printStackTrace();
                     }
                     updateLabels();
-                    lastSavedLabel.setText("Last saved: " + LocalDateTime.now().format(DISPLAY_FMT));
+                    lastSavedLabel.setText("Сохранено: " + LocalDateTime.now().format(DISPLAY_FMT));
                 });
             } catch (Exception e) {
                 System.err.println("[DB] Save failed: " + e.getMessage());
                 e.printStackTrace();
-                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Could not save to server: " + e.getMessage()));
+                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Ошибка сохранения на сервере: " + e.getMessage()));
             }
         }).start();
     }
@@ -349,7 +349,7 @@ public class ProcessDesignerController {
         Path target = SVG_DIR.resolve(fileName);
         try {
             Files.writeString(target, svg, StandardCharsets.UTF_8);
-            Platform.runLater(() -> lastSavedLabel.setText("SVG exported: " + fileName));
+            Platform.runLater(() -> lastSavedLabel.setText("SVG экспортирован: " + fileName));
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().open(target.toFile());
             }
@@ -411,13 +411,13 @@ public class ProcessDesignerController {
                 VBox.setMargin(sep, new javafx.geometry.Insets(5, 0, 5, 0));
                 propertiesContainer.getChildren().add(sep);
 
-                Label header = new Label("Task Definition");
+                Label header = new Label("Определение задачи");
                 header.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
                 propertiesContainer.getChildren().add(header);
 
                 currentNameField = new TextField(td.name());
-                currentNameField.setPromptText("Name");
-                addEditableRow("Name", currentNameField);
+                currentNameField.setPromptText("Название");
+                addEditableRow("Название", currentNameField);
                 currentNameField.textProperty().addListener((obs, old, newVal) -> {
                     TaskDefinition current = taskDefinitions.get(selectedElementId);
                     if (current != null) {
@@ -428,14 +428,14 @@ public class ProcessDesignerController {
                 });
 
                 currentDurationField = new TextField(String.valueOf(td.defaultDuration() / 60));
-                currentDurationField.setPromptText("Duration (hours)");
+                currentDurationField.setPromptText("Длительность (часы)");
                 currentDurationField.setTextFormatter(new TextFormatter<>(change -> {
                     if (change.getControlNewText().matches("\\d*")) {
                         return change;
                     }
                     return null;
                 }));
-                addEditableRow("Duration (h)", currentDurationField);
+                addEditableRow("Длительность (ч)", currentDurationField);
                 currentDurationField.textProperty().addListener((obs, old, newVal) -> {
                     try {
                         int hours = newVal.isBlank() ? 0 : Integer.parseInt(newVal);
@@ -516,7 +516,7 @@ public class ProcessDesignerController {
     private void addCostRow(TextField field) {
         HBox row = new HBox();
         row.setSpacing(8);
-        Label keyLabel = new Label("Cost ($):");
+        Label keyLabel = new Label("Стоимость ($):");
         keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
         HBox.setHgrow(field, Priority.ALWAYS);
         row.getChildren().addAll(keyLabel, field);
@@ -526,7 +526,7 @@ public class ProcessDesignerController {
     private void addKpiWeightRow(TextField field) {
         HBox row = new HBox();
         row.setSpacing(8);
-        Label keyLabel = new Label("KPI Weight:");
+        Label keyLabel = new Label("Вес KPI:");
         keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
         HBox.setHgrow(field, Priority.ALWAYS);
         field.setStyle("-fx-text-fill: -color-accent-emphasis; -fx-font-weight: bold;");
@@ -538,7 +538,7 @@ public class ProcessDesignerController {
         if (currentDiagramName != null) {
             diagramNameLabel.setText(currentDiagramName);
         } else {
-            diagramNameLabel.setText("Untitled");
+            diagramNameLabel.setText("Без имени");
         }
     }
 

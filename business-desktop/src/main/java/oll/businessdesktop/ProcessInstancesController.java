@@ -93,11 +93,11 @@ public class ProcessInstancesController {
 
         colActions.setCellFactory(col -> new TableCell<>() {
             private final HBox actionBox = new HBox(6);
-            private final Button changeStatusBtn = new Button("Status");
-            private final Button assignBtn = new Button("Assign");
+            private final Button changeStatusBtn = new Button("Статус");
+            private final Button assignBtn = new Button("Назначить");
             private final MenuButton moreBtn = new MenuButton("...");
-            private final MenuItem completeItem = new MenuItem("Complete");
-            private final MenuItem cancelItem = new MenuItem("Cancel");
+            private final MenuItem completeItem = new MenuItem("Завершить");
+            private final MenuItem cancelItem = new MenuItem("Отменить");
 
             {
                 changeStatusBtn.getStyleClass().add("table-action-button");
@@ -170,14 +170,14 @@ public class ProcessInstancesController {
     private void changeTaskStatus(TaskRow row, String status) {
         if (row == null) return;
 
-        statusLabel.setText("Updating task...");
+        statusLabel.setText("Обновление задачи...");
         new Thread(() -> {
             try {
                 ApiService.updateTaskStatus(row.getTask().id(), status);
                 loadTasks(currentInstance.id());
-                Platform.runLater(() -> statusLabel.setText("Task updated to " + status));
+                Platform.runLater(() -> statusLabel.setText("Статус задачи изменён на " + status));
             } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Failed: " + e.getMessage()));
+                Platform.runLater(() -> statusLabel.setText("Ошибка: " + e.getMessage()));
             }
         }).start();
     }
@@ -185,14 +185,14 @@ public class ProcessInstancesController {
     private void assignTask(TaskRow row, Long assigneeId) {
         if (row == null) return;
 
-        statusLabel.setText("Assigning task...");
+        statusLabel.setText("Назначение задачи...");
         new Thread(() -> {
             try {
                 ApiService.assignTask(row.getTask().id(), assigneeId);
                 loadTasks(currentInstance.id());
-                Platform.runLater(() -> statusLabel.setText("Task assigned"));
+                Platform.runLater(() -> statusLabel.setText("Задача назначена"));
             } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Assign failed: " + e.getMessage()));
+                Platform.runLater(() -> statusLabel.setText("Ошибка назначения: " + e.getMessage()));
             }
         }).start();
     }
@@ -201,10 +201,10 @@ public class ProcessInstancesController {
         if (row == null || currentInstance == null) return;
 
         Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Change Task Status");
-        dialog.setHeaderText("Task: " + row.getName());
+        dialog.setTitle("Изменить статус задачи");
+        dialog.setHeaderText("Задача: " + row.getName());
 
-        ButtonType applyBtn = new ButtonType("Apply", ButtonBar.ButtonData.OK_DONE);
+        ButtonType applyBtn = new ButtonType("Применить", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().setAll(applyBtn, ButtonType.CANCEL);
 
         ComboBox<String> statusCombo = new ComboBox<>(FXCollections.observableArrayList(
@@ -216,7 +216,7 @@ public class ProcessInstancesController {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
-        grid.add(new Label("Status:"), 0, 0);
+        grid.add(new Label("Статус:"), 0, 0);
         grid.add(statusCombo, 1, 0);
 
         dialog.getDialogPane().setContent(grid);
@@ -235,11 +235,11 @@ public class ProcessInstancesController {
         if (row == null || currentInstance == null) return;
 
         Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Assign Task");
-        dialog.setHeaderText("Task: " + row.getName());
+        dialog.setTitle("Назначить задачу");
+        dialog.setHeaderText("Задача: " + row.getName());
 
-        ButtonType applyBtn = new ButtonType("Assign", ButtonBar.ButtonData.OK_DONE);
-        ButtonType unassignBtn = new ButtonType("Unassign", ButtonBar.ButtonData.LEFT);
+        ButtonType applyBtn = new ButtonType("Назначить", ButtonBar.ButtonData.OK_DONE);
+        ButtonType unassignBtn = new ButtonType("Снять назначение", ButtonBar.ButtonData.LEFT);
         dialog.getDialogPane().getButtonTypes().setAll(applyBtn, unassignBtn, ButtonType.CANCEL);
 
         ComboBox<User> userCombo = new ComboBox<>();
@@ -255,7 +255,7 @@ public class ProcessInstancesController {
             @Override
             protected void updateItem(User u, boolean empty) {
                 super.updateItem(u, empty);
-                setText(u == null || empty ? "Select user..." : u.firstName() + " " + u.lastName());
+                setText(u == null || empty ? "Выберите пользователя..." : u.firstName() + " " + u.lastName());
             }
         });
         if (row.getTask().assignee() != null) {
@@ -271,7 +271,7 @@ public class ProcessInstancesController {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
-        grid.add(new Label("Assignee:"), 0, 0);
+        grid.add(new Label("Исполнитель:"), 0, 0);
         grid.add(userCombo, 1, 0);
 
         dialog.getDialogPane().setContent(grid);
@@ -279,7 +279,7 @@ public class ProcessInstancesController {
         dialog.setResultConverter(btn -> {
             if (btn == applyBtn) {
                 if (userCombo.getValue() == null) {
-                    showAlert("Select a user");
+                    showAlert("Выберите пользователя");
                     return null;
                 }
                 return "assign:" + userCombo.getValue().id();
@@ -303,14 +303,14 @@ public class ProcessInstancesController {
     private void unassignTask(TaskRow row) {
         if (row == null) return;
 
-        statusLabel.setText("Unassigning task...");
+        statusLabel.setText("Снятие назначения...");
         new Thread(() -> {
             try {
                 ApiService.unassignTask(row.getTask().id());
                 loadTasks(currentInstance.id());
-                Platform.runLater(() -> statusLabel.setText("Task unassigned"));
+                Platform.runLater(() -> statusLabel.setText("Назначение снято"));
             } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Unassign failed: " + e.getMessage()));
+                Platform.runLater(() -> statusLabel.setText("Ошибка снятия назначения: " + e.getMessage()));
             }
         }).start();
     }
@@ -319,20 +319,20 @@ public class ProcessInstancesController {
         if (row == null) return;
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Complete Task");
-        confirm.setHeaderText("Complete: " + row.getName());
-        confirm.setContentText("This action cannot be undone. The task will be locked.");
+        confirm.setTitle("Завершить задачу");
+        confirm.setHeaderText("Завершить: " + row.getName());
+        confirm.setContentText("Это действие нельзя отменить. Задача будет заблокирована.");
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                statusLabel.setText("Completing task...");
+                statusLabel.setText("Завершение задачи...");
                 new Thread(() -> {
                     try {
                         ApiService.completeTask(row.getTask().id());
                         loadTasks(currentInstance.id());
-                        Platform.runLater(() -> statusLabel.setText("Task completed and locked"));
+                        Platform.runLater(() -> statusLabel.setText("Задача завершена и заблокирована"));
                     } catch (Exception e) {
-                        Platform.runLater(() -> statusLabel.setText("Complete failed: " + e.getMessage()));
+                        Platform.runLater(() -> statusLabel.setText("Ошибка завершения: " + e.getMessage()));
                     }
                 }).start();
             }
@@ -343,20 +343,20 @@ public class ProcessInstancesController {
         if (row == null) return;
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Cancel Task");
-        confirm.setHeaderText("Cancel: " + row.getName());
-        confirm.setContentText("This action cannot be undone. The task will be locked.");
+        confirm.setTitle("Отменить задачу");
+        confirm.setHeaderText("Отменить: " + row.getName());
+        confirm.setContentText("Это действие нельзя отменить. Задача будет заблокирована.");
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                statusLabel.setText("Cancelling task...");
+                statusLabel.setText("Отмена задачи...");
                 new Thread(() -> {
                     try {
                         ApiService.cancelTask(row.getTask().id());
                         loadTasks(currentInstance.id());
-                        Platform.runLater(() -> statusLabel.setText("Task cancelled and locked"));
+                        Platform.runLater(() -> statusLabel.setText("Задача отменена и заблокирована"));
                     } catch (Exception e) {
-                        Platform.runLater(() -> statusLabel.setText("Cancel failed: " + e.getMessage()));
+                        Platform.runLater(() -> statusLabel.setText("Ошибка отмены: " + e.getMessage()));
                     }
                 }).start();
             }
@@ -396,14 +396,14 @@ public class ProcessInstancesController {
     }
 
     private void loadInstanceList() {
-        statusLabel.setText("Loading instances...");
+        statusLabel.setText("Загрузка экземпляров...");
         new Thread(() -> {
             try {
                 allInstances = ApiService.getAllProcessInstances();
                 Platform.runLater(() -> {
                     if (allInstances == null || allInstances.isEmpty()) {
                         instanceSelector.setItems(FXCollections.emptyObservableList());
-                        statusLabel.setText("No process instances found");
+                        statusLabel.setText("Процессы не найдены");
                         return;
                     }
                     instanceSelector.setItems(FXCollections.observableArrayList(
@@ -415,17 +415,17 @@ public class ProcessInstancesController {
                                             label += inst.model().name();
                                         } else {
                                             if (!label.isEmpty()) label += " - ";
-                                            label += "Instance #" + inst.id();
+                                            label += "Экземпляр #" + inst.id();
                                         }
                                         return label;
                                     })
                                     .toList()));
-                    statusLabel.setText(allInstances.size() + " instance(s) available");
+                    statusLabel.setText("Доступно: " + allInstances.size() + " экз.");
                     instanceSelector.setOnAction(e -> onInstanceSelected());
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
-                    statusLabel.setText("Failed to load instances: " + e.getMessage());
+                    statusLabel.setText("Ошибка загрузки экземпляров: " + e.getMessage());
                 });
             }
         }).start();
@@ -439,7 +439,7 @@ public class ProcessInstancesController {
         if (idx < 0 || idx >= allInstances.size()) return;
 
         currentInstance = allInstances.get(idx);
-        statusLabel.setText("Loading instance #" + currentInstance.id() + "...");
+        statusLabel.setText("Загрузка экземпляра #" + currentInstance.id() + "...");
 
         showInstanceInfo(currentInstance);
         loadInstanceBpmn(currentInstance);
@@ -457,12 +457,12 @@ public class ProcessInstancesController {
     private void showInstanceInfo(ProcessInstance inst) {
         processInfoRows.getChildren().clear();
         addInfoItem("ID", String.valueOf(inst.id()));
-        addInfoItem("Name", inst.name() != null ? inst.name() : "-");
-        addInfoItem("Model", inst.model() != null ? inst.model().name() : "N/A");
-        addInfoItem("Status", inst.status());
-        addInfoItem("Started", formatDateTime(inst.startedAt()));
-        addInfoItem("Finished", formatDateTime(inst.finishedAt()));
-        addInfoItem("State", inst.currentState() != null ? inst.currentState() : "-");
+        addInfoItem("Имя", inst.name() != null ? inst.name() : "-");
+        addInfoItem("Модель", inst.model() != null ? inst.model().name() : "Н/Д");
+        addInfoItem("Статус", inst.status());
+        addInfoItem("Запущен", formatDateTime(inst.startedAt()));
+        addInfoItem("Завершён", formatDateTime(inst.finishedAt()));
+        addInfoItem("Состояние", inst.currentState() != null ? inst.currentState() : "-");
     }
 
     private String formatDateTime(LocalDateTime dt) {
@@ -534,7 +534,7 @@ public class ProcessInstancesController {
                     rows.sort(Comparator.comparing(TaskRow::getId));
                     taskTable.setItems(FXCollections.observableArrayList(rows));
                     currentTasks = tasks;
-                    statusLabel.setText("Loaded " + rows.size() + " tasks");
+                    statusLabel.setText("Загружено " + rows.size() + " задач");
 
                     // Update KPI cards from local task data
                     double delayRate = completedCount > 0 ? (double) delayedCount / completedCount : 0;
@@ -556,7 +556,7 @@ public class ProcessInstancesController {
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
-                    statusLabel.setText("Failed to load tasks: " + e.getMessage());
+                    statusLabel.setText("Ошибка загрузки задач: " + e.getMessage());
                     kpiCardsContainer.setVisible(false);
                 });
             }
