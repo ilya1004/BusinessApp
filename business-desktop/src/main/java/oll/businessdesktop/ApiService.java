@@ -28,7 +28,15 @@ import java.util.List;
 import java.util.Map;
 
 public class ApiService {
-    private static final String BASE_URL = "http://localhost:8080/api";
+    private static final String BASE_URL = getBaseUrl();
+
+    private static String getBaseUrl() {
+        String serverUrl = System.getenv("SERVER_URL");
+        if (serverUrl == null || serverUrl.isBlank()) {
+            serverUrl = "http://localhost:8080";
+        }
+        return serverUrl + "/api";
+    }
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
