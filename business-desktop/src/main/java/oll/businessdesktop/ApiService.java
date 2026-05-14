@@ -15,7 +15,6 @@ import oll.businessdesktop.model.Task;
 import oll.businessdesktop.model.KpiModelData;
 import oll.businessdesktop.model.KpiInstanceData;
 import oll.businessdesktop.model.KpiUserStats;
-import oll.businessdesktop.model.KpiWeights;
 import oll.businessdesktop.model.AppLog;
 
 import java.io.IOException;
@@ -677,46 +676,6 @@ public class ApiService {
             return objectMapper.readValue(response.body(), KpiUserStats.class);
         } else {
             throw new RuntimeException("Failed to get current user stats: " + response.body());
-        }
-    }
-
-    public static KpiWeights getKpiWeights(Long modelId) throws IOException, InterruptedException {
-        String url = BASE_URL + "/settings/kpi-weights";
-        if (modelId != null) {
-            url += "?modelId=" + modelId;
-        }
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Authorization", "Bearer " + authToken)
-                .GET()
-                .build();
-
-        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() == 200) {
-            return objectMapper.readValue(response.body(), KpiWeights.class);
-        } else {
-            throw new RuntimeException("Failed to get KPI weights: " + response.body());
-        }
-    }
-
-    public static KpiWeights saveKpiWeights(Long modelId, java.math.BigDecimal w1, java.math.BigDecimal w2, java.math.BigDecimal w3) throws IOException, InterruptedException {
-        String body = objectMapper.writeValueAsString(
-                java.util.Map.of("modelId", modelId, "w1", w1, "w2", w2, "w3", w3));
-
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/settings/kpi-weights"))
-                .header("Authorization", "Bearer " + authToken)
-                .header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(body))
-                .build();
-
-        HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() == 200) {
-            return objectMapper.readValue(response.body(), KpiWeights.class);
-        } else {
-            throw new RuntimeException("Failed to save KPI weights: " + response.body());
         }
     }
 

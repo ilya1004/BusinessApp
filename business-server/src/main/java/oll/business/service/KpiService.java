@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,13 +21,14 @@ import java.util.stream.Collectors;
 public class KpiService {
 
     private static final BigDecimal MAX_COST_RATE = new BigDecimal("2.0");
-    private static final BigDecimal DEFAULT_WEIGHT = new BigDecimal("0.34");
+    private static final BigDecimal W1 = new BigDecimal("0.34");
+    private static final BigDecimal W2 = new BigDecimal("0.33");
+    private static final BigDecimal W3 = new BigDecimal("0.33");
 
     private final ProcessInstanceRepository instanceRepository;
     private final TaskRepository taskRepository;
     private final ProcessModelRepository modelRepository;
     private final TaskDefinitionRepository taskDefRepository;
-    private final KpiWeightsRepository kpiWeightsRepository;
     private final UserRepository userRepository;
     private final LogService logService;
 
@@ -36,14 +36,12 @@ public class KpiService {
                       TaskRepository taskRepository,
                       ProcessModelRepository modelRepository,
                       TaskDefinitionRepository taskDefRepository,
-                      KpiWeightsRepository kpiWeightsRepository,
                       UserRepository userRepository,
                       LogService logService) {
         this.instanceRepository = instanceRepository;
         this.taskRepository = taskRepository;
         this.modelRepository = modelRepository;
         this.taskDefRepository = taskDefRepository;
-        this.kpiWeightsRepository = kpiWeightsRepository;
         this.userRepository = userRepository;
         this.logService = logService;
     }
@@ -58,11 +56,9 @@ public class KpiService {
 
         List<ProcessInstance> all = instanceRepository.findByModelId(modelId);
 
-        KpiWeights weights = getWeightsForModel(modelId);
-
         double avgDuration = calcAvgDuration(completed);
         double delayRate = calcDelayRate(completed);
-        double rating = calcRating(model, weights, completed, delayRate);
+        double rating = calcRating(completed, delayRate);
 
         KpiModelDto dto = new KpiModelDto();
         dto.setModelId(modelId);
@@ -89,8 +85,6 @@ public class KpiService {
     public KpiInstanceDto getInstanceKpi(Long instanceId) {
         ProcessInstance inst = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new RuntimeException("Instance not found: " + instanceId));
-
-        KpiWeights weights = getWeightsForModel(inst.getModel().getId());
 
         List<Task> tasks = taskRepository.findByInstanceId(instanceId);
 
@@ -147,11 +141,7 @@ public class KpiService {
                 .filter(t -> t.getStatus() == TaskStatus.COMPLETED)
                 .collect(Collectors.toList());
 
-        KpiWeights globalWeights = kpiWeightsRepository.findByModelIdIsNull().stream()
-                .findFirst()
-                .orElse(KpiWeights.defaultWeights());
-
-        double rating = calcUserRating(globalWeights, completed, userTasks);
+        double rating = calcUserRating(completed, userTasks);
 
         LocalDate weekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate weekEnd = weekStart.plusDays(6);
@@ -184,59 +174,6 @@ public class KpiService {
         return dto;
     }
 
-    public KpiWeightsDto getWeights(Long modelId) {
-        KpiWeights w = getWeightsForModel(modelId);
-        KpiWeightsDto dto = new KpiWeightsDto();
-        dto.setModelId(modelId);
-        dto.setW1(w.getW1());
-        dto.setW2(w.getW2());
-        dto.setW3(w.getW3());
-        return dto;
-    }
-
-    @Transactional
-    public KpiWeightsDto saveWeights(KpiWeightsDto request) {
-        BigDecimal sum = request.getSum();
-        if (sum.compareTo(BigDecimal.ONE) != 0) {
-            throw new IllegalArgumentException("Weights must sum to 1.0, got " + sum);
-        }
-
-        KpiWeights w;
-        if (request.getModelId() != null) {
-            w = kpiWeightsRepository.findByModelId(request.getModelId())
-                    .orElse(new KpiWeights());
-            if (w.getId() == null) {
-                ProcessModel model = modelRepository.findById(request.getModelId())
-                        .orElseThrow(() -> new RuntimeException("Model not found: " + request.getModelId()));
-                w.setModel(model);
-            }
-        } else {
-            w = kpiWeightsRepository.findByModelIdIsNull().stream()
-                    .findFirst()
-                    .orElse(new KpiWeights());
-        }
-
-        w.setW1(request.getW1());
-        w.setW2(request.getW2());
-        w.setW3(request.getW3());
-        w.setUpdatedAt(LocalDateTime.now());
-
-        kpiWeightsRepository.save(w);
-
-        recalculateModelWeights(request.getModelId());
-
-        logService.logInfo("KPI weights saved for modelId=" + request.getModelId()
-                + " (w1=" + request.getW1() + ", w2=" + request.getW2() + ", w3=" + request.getW3() + ")",
-                "KpiService", "saveWeights");
-
-        KpiWeightsDto dto = new KpiWeightsDto();
-        dto.setModelId(request.getModelId());
-        dto.setW1(w.getW1());
-        dto.setW2(w.getW2());
-        dto.setW3(w.getW3());
-        return dto;
-    }
-
     @Scheduled(fixedRate = 300000)
     @Transactional
     public void scheduledRecalculate() {
@@ -257,7 +194,6 @@ public class KpiService {
         List<TaskDefinition> defs = taskDefRepository.findByModelId(modelId);
         if (defs.isEmpty()) return;
 
-        KpiWeights weights = getWeightsForModel(modelId);
         List<ProcessInstance> completed = instanceRepository.findByModelId(modelId).stream()
                 .filter(i -> i.getStatus() == ProcessStatus.COMPLETED)
                 .collect(Collectors.toList());
@@ -269,16 +205,6 @@ public class KpiService {
             def.setKpiWeight(weight);
             taskDefRepository.save(def);
         }
-    }
-
-    private KpiWeights getWeightsForModel(Long modelId) {
-        if (modelId != null) {
-            Optional<KpiWeights> modelWeights = kpiWeightsRepository.findByModelId(modelId);
-            if (modelWeights.isPresent()) return modelWeights.get();
-        }
-        return kpiWeightsRepository.findByModelIdIsNull().stream()
-                .findFirst()
-                .orElse(KpiWeights.defaultWeights());
     }
 
     private double calcAvgDuration(List<ProcessInstance> completed) {
@@ -304,7 +230,7 @@ public class KpiService {
         return (double) delayed / tasks.size();
     }
 
-    private double calcRating(ProcessModel model, KpiWeights weights, List<ProcessInstance> completed, double delayRate) {
+    private double calcRating(List<ProcessInstance> completed, double delayRate) {
         double delayScore = 1.0 - Math.min(delayRate, 1.0);
 
         double efficiency = 1.0;
@@ -331,13 +257,9 @@ public class KpiService {
         double costRate = calcCostRate(completed);
         double costScore = 1.0 - Math.min(costRate, 1.0);
 
-        BigDecimal w1 = weights.getW1() != null ? weights.getW1() : DEFAULT_WEIGHT;
-        BigDecimal w2 = weights.getW2() != null ? weights.getW2() : DEFAULT_WEIGHT;
-        BigDecimal w3 = weights.getW3() != null ? weights.getW3() : DEFAULT_WEIGHT;
-
-        return w1.doubleValue() * delayScore +
-               w2.doubleValue() * costScore +
-               w3.doubleValue() * efficiency;
+        return W1.doubleValue() * delayScore +
+               W2.doubleValue() * costScore +
+               W3.doubleValue() * efficiency;
     }
 
     private double calcCostRate(List<ProcessInstance> completed) {
@@ -392,7 +314,7 @@ public class KpiService {
         return Math.max(0.0, Math.min(1.0, 1.0 - Math.max(0.0, ratio - 1.0)));
     }
 
-    private double calcUserRating(KpiWeights weights, List<Task> completed, List<Task> allTasks) {
+    private double calcUserRating(List<Task> completed, List<Task> allTasks) {
         if (completed.isEmpty()) return 0.0;
 
         long onTime = completed.stream()
@@ -426,20 +348,13 @@ public class KpiService {
         double costScore = plannedCost.compareTo(BigDecimal.ZERO) > 0 ?
                 1.0 - Math.min(costTotal.divide(plannedCost, 4, RoundingMode.HALF_UP).doubleValue(), 1.0) : 1.0;
 
-        BigDecimal w1 = weights.getW1() != null ? weights.getW1() : DEFAULT_WEIGHT;
-        BigDecimal w2 = weights.getW2() != null ? weights.getW2() : DEFAULT_WEIGHT;
-        BigDecimal w3 = weights.getW3() != null ? weights.getW3() : DEFAULT_WEIGHT;
-
-        return w1.doubleValue() * delayScore +
-               w2.doubleValue() * costScore +
-               w3.doubleValue() * efficiency;
+        return W1.doubleValue() * delayScore +
+               W2.doubleValue() * costScore +
+               W3.doubleValue() * efficiency;
     }
 
     private List<KpiUserStatsDto.RatingHistoryPoint> buildRatingHistory(Long userId, List<Task> completed) {
         List<KpiUserStatsDto.RatingHistoryPoint> history = new ArrayList<>();
-        KpiWeights globalWeights = kpiWeightsRepository.findByModelIdIsNull().stream()
-                .findFirst()
-                .orElse(KpiWeights.defaultWeights());
 
         for (int i = 6; i >= 0; i--) {
             LocalDate date = LocalDate.now().minusDays(i);
@@ -447,7 +362,7 @@ public class KpiService {
                     .filter(t -> t.getCompletedAt() != null && t.getCompletedAt().toLocalDate().isEqual(date))
                     .collect(Collectors.toList());
 
-            double dayRating = calcUserRating(globalWeights, tasksByDate, completed);
+            double dayRating = calcUserRating(tasksByDate, completed);
             KpiUserStatsDto.RatingHistoryPoint point = new KpiUserStatsDto.RatingHistoryPoint();
             point.setDate(date.toString());
             point.setRating(round(dayRating, 3));
