@@ -16,8 +16,4 @@ public record TaskDefinition(
     public TaskDefinition(String bpmnElementId, String name) {
         this(null, bpmnElementId, name, 60, BigDecimal.ONE, BigDecimal.ONE);
     }
-
-    public BigDecimal getKpiWeight() {
-        return kpiWeight != null ? kpiWeight : BigDecimal.ONE;
-    }
 }

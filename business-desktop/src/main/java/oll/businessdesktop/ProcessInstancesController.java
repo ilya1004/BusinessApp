@@ -36,8 +36,6 @@ public class ProcessInstancesController {
     @FXML private VBox kpiCardsContainer;
     @FXML private Label kpiPlannedLabel;
     @FXML private Label kpiActualLabel;
-    @FXML private Label kpiOnTimeLabel;
-    @FXML private Label kpiDelayLabel;
     @FXML private TableView<TaskRow> taskTable;
     @FXML private TableColumn<TaskRow, Long> colId;
     @FXML private TableColumn<TaskRow, String> colName;
@@ -493,8 +491,6 @@ public class ProcessInstancesController {
                     int totalPlanned = 0;
                     int totalActual = 0;
                     int completedCount = 0;
-                    int delayedCount = 0;
-                    int onTimeCount = 0;
 
                     for (Task t : tasks) {
                         int planned = t.plannedDuration() != null ? t.plannedDuration() : 0;
@@ -529,29 +525,15 @@ public class ProcessInstancesController {
                     }
 
                     System.out.println("[ProcessInstancesController] totalPlanned=" + totalPlanned + " totalActual=" + totalActual
-                            + " completedCount=" + completedCount + " delayedCount=" + delayedCount);
+                            + " completedCount=" + completedCount);
 
                     rows.sort(Comparator.comparing(TaskRow::getId));
                     taskTable.setItems(FXCollections.observableArrayList(rows));
                     currentTasks = tasks;
                     statusLabel.setText("Загружено " + rows.size() + " задач");
 
-                    // Update KPI cards from local task data
-                    double delayRate = completedCount > 0 ? (double) delayedCount / completedCount : 0;
-                    double onTimeRate = completedCount > 0 ? (double) onTimeCount / completedCount : 0;
-                    double deviation = totalPlanned > 0 ? ((double) (totalActual - totalPlanned) / totalPlanned) * 100.0 : 0.0;
-
                     kpiPlannedLabel.setText((totalPlanned / 60) + " h");
                     kpiActualLabel.setText((totalActual / 60) + " h");
-                    kpiOnTimeLabel.setText(String.format("%.0f%%", onTimeRate * 100));
-                    kpiOnTimeLabel.setStyle(onTimeRate >= 0.8
-                            ? "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-success-emphasis;"
-                            : "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-warning-emphasis;");
-                    kpiDelayLabel.setText(String.format("%.0f%%", delayRate * 100));
-                    kpiDelayLabel.setStyle(delayRate > 0.2
-                            ? "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-danger-emphasis;"
-                            : "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-success-emphasis;");
-
                     kpiCardsContainer.setVisible(true);
                 });
             } catch (Exception e) {

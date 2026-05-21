@@ -215,29 +215,12 @@ public class ProcessViewController {
 
     private void showDiagram(ProcessModel model) {
         Path bpmnFile = BPMN_DIR.resolve(model.name() + ".bpmn");
-        String xml;
-        if (Files.exists(bpmnFile)) {
-            try {
-                xml = Files.readString(bpmnFile, StandardCharsets.UTF_8);
-                statusLabel.setText("Загружено из локального файла");
-            } catch (IOException e) {
-                xml = model.bpmnXml();
-                try {
-                    Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-                    statusLabel.setText("Восстановлено из БД в локальный файл");
-                } catch (IOException ex) {
-                    statusLabel.setText("Используется BPMN из БД (не удалось сохранить файл)");
-                }
-            }
-        } else {
-            xml = model.bpmnXml();
-            try {
+        String xml = model.bpmnXml();
+        try {
             Files.createDirectories(BPMN_DIR);
-                Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8);
-                statusLabel.setText("Создано из БД и сохранено локально");
-            } catch (IOException e) {
-                statusLabel.setText("Using BPMN from DB (could not save file)");
-            }
+            Files.writeString(bpmnFile, xml, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            statusLabel.setText("Не удалось сохранить BPMN-файл");
         }
 
         if (viewerReady) {
@@ -318,7 +301,7 @@ public class ProcessViewController {
 
         durationField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*") ? c : null));
         costField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*(\\.\\d{0,2})?") ? c : null));
-        kpiField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d*\\.?\\d*") ? c : null));
+        kpiField.setTextFormatter(new TextFormatter<>(c -> c.getControlNewText().matches("\\d?(\\.\\d*)?") ? c : null));
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -389,7 +372,7 @@ public class ProcessViewController {
         java.util.List<TaskDefinitionRow> rows = new java.util.ArrayList<>();
         if (model.taskDefinitions() != null) {
             for (TaskDefinition td : model.taskDefinitions()) {
-                BigDecimal kpiW = td.getKpiWeight();
+                BigDecimal kpiW = td.kpiWeight();
                 rows.add(new TaskDefinitionRow(td.id(), td.name(), td.defaultDuration() / 60, td.expectedCost(), kpiW));
             }
         }

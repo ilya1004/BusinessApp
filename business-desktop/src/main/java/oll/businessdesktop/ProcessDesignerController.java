@@ -9,7 +9,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -282,11 +281,13 @@ public class ProcessDesignerController {
     }
 
     void handleXMLSaved(String xml) {
-        List<TaskDefinition> taskList = new ArrayList<>(taskDefinitions.values());
-        System.out.println("[SAVE] Preparing to save " + taskList.size() + " TaskDefinitions");
-        for (TaskDefinition td : taskList) {
-            System.out.println("[SAVE]   - id=" + td.id() + ", elementId=" + td.bpmnElementId() + ", name=" + td.name());
+        List<TaskDefinition> taskList = new ArrayList<>();
+        for (TaskDefinition td : taskDefinitions.values()) {
+            if (xml.contains("id=\"" + td.bpmnElementId() + "\"")) {
+                taskList.add(td);
+            }
         }
+        System.out.println("[SAVE] Preparing to save " + taskList.size() + " TaskDefinitions");
         
         new Thread(() -> {
             try {
@@ -467,10 +468,10 @@ public class ProcessDesignerController {
                     } catch (NumberFormatException e) {}
                 });
 
-                currentKpiWeightField = new TextField(td.getKpiWeight().toPlainString());
+                currentKpiWeightField = new TextField(td.kpiWeight() != null ? td.kpiWeight().toPlainString() : "1");
                 currentKpiWeightField.setPromptText("0.00");
                 currentKpiWeightField.setTextFormatter(new TextFormatter<>(change -> {
-                    if (change.getControlNewText().matches("\\d*\\.?\\d*")) {
+                    if (change.getControlNewText().matches("\\d?(\\.\\d*)?")) {
                         return change;
                     }
                     return null;
@@ -508,7 +509,7 @@ public class ProcessDesignerController {
         row.setSpacing(8);
         Label keyLabel = new Label(label + ":");
         keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
-        HBox.setHgrow(field, Priority.ALWAYS);
+        field.setPrefWidth(120);
         row.getChildren().addAll(keyLabel, field);
         propertiesContainer.getChildren().add(row);
     }
@@ -518,7 +519,7 @@ public class ProcessDesignerController {
         row.setSpacing(8);
         Label keyLabel = new Label("Стоимость ($):");
         keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
-        HBox.setHgrow(field, Priority.ALWAYS);
+        field.setPrefWidth(120);
         row.getChildren().addAll(keyLabel, field);
         propertiesContainer.getChildren().add(row);
     }
@@ -528,7 +529,7 @@ public class ProcessDesignerController {
         row.setSpacing(8);
         Label keyLabel = new Label("Вес KPI:");
         keyLabel.setStyle("-fx-font-weight: bold; -fx-min-width: 90;");
-        HBox.setHgrow(field, Priority.ALWAYS);
+        field.setPrefWidth(120);
         field.setStyle("-fx-text-fill: -color-accent-emphasis; -fx-font-weight: bold;");
         row.getChildren().addAll(keyLabel, field);
         propertiesContainer.getChildren().add(row);

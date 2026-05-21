@@ -39,14 +39,7 @@
                             <Label text="Факт" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
                             <Label fx:id="kpiActualLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
                         </VBox>
-                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
-                            <Label text="Своевременность" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
-                            <Label fx:id="kpiOnTimeLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        </VBox>
-                        <VBox HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 6;">
-                            <Label text="Задержки" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
-                            <Label fx:id="kpiDelayLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        </VBox>
+
                     </HBox>
                 </VBox>
                 <VBox fx:id="infoContainer" spacing="8" styleClass="panel-box" maxWidth="Infinity">
@@ -62,7 +55,7 @@
                             <TableColumn fx:id="colStatus" text="Статус" prefWidth="120"/>
                             <TableColumn fx:id="colAssignee" text="Исполнитель" prefWidth="140"/>
                             <TableColumn fx:id="colDuration" text="Длительность (факт / план), ч" prefWidth="270"/>
-                            <TableColumn fx:id="colActions" text="Действия" prefWidth="220"/>
+                            <TableColumn fx:id="colActions" text="Действия" prefWidth="270"/>
                         </columns>
                     </TableView>
                 </VBox>

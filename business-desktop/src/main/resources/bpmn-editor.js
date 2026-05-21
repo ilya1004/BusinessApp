@@ -146,11 +146,27 @@ function setupElementListeners() {
         }
     });
 
+    eventBus.on('commandStack.shape.delete.executed', function(event) {
+        var context = event.context;
+        var shape = context.shape;
+        if (shape) {
+            sendElementDeleted(shape.id);
+        }
+    });
+
     eventBus.on('commandStack.connection.create.executed', function(event) {
         var context = event.context;
         var connection = context.connection;
         if (connection && connection.businessObject) {
             sendElementInfo(connection, 'connected');
+        }
+    });
+
+    eventBus.on('commandStack.connection.delete.executed', function(event) {
+        var context = event.context;
+        var connection = context.connection;
+        if (connection) {
+            sendElementDeleted(connection.id);
         }
     });
 

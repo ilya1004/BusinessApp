@@ -174,39 +174,6 @@ public class KpiService {
         return dto;
     }
 
-    @Scheduled(fixedRate = 300000)
-    @Transactional
-    public void scheduledRecalculate() {
-        logService.logInfo("Starting scheduled KPI recalculation", "KpiService", "scheduledRecalculate");
-        List<ProcessModel> models = modelRepository.findAll();
-        for (ProcessModel m : models) {
-            try {
-                recalculateModelWeights(m.getId());
-            } catch (Exception e) {
-                logService.logError("KPI recalculation failed for model " + m.getId() + ": " + e.getMessage(), "KpiService", "scheduledRecalculate");
-            }
-        }
-        logService.logInfo("KPI recalculation complete", "KpiService", "scheduledRecalculate");
-    }
-
-    @Transactional
-    public void recalculateModelWeights(Long modelId) {
-        List<TaskDefinition> defs = taskDefRepository.findByModelId(modelId);
-        if (defs.isEmpty()) return;
-
-        List<ProcessInstance> completed = instanceRepository.findByModelId(modelId).stream()
-                .filter(i -> i.getStatus() == ProcessStatus.COMPLETED)
-                .collect(Collectors.toList());
-
-        for (TaskDefinition def : defs) {
-            double efficiency = calcTaskEfficiency(def, completed);
-            BigDecimal weight = BigDecimal.valueOf(efficiency)
-                    .setScale(2, RoundingMode.HALF_UP);
-            def.setKpiWeight(weight);
-            taskDefRepository.save(def);
-        }
-    }
-
     private double calcAvgDuration(List<ProcessInstance> completed) {
         if (completed.isEmpty()) return 0.0;
         return completed.stream()

@@ -42,7 +42,7 @@
                             <TableColumn fx:id="colDuration" text="Длительность (ч)" prefWidth="110"/>
                             <TableColumn fx:id="colCost" text="Ожидаемая стоимость ($)" prefWidth="170"/>
                             <TableColumn fx:id="colKpiWeight" text="Вес KPI" prefWidth="100"/>
-                            <TableColumn fx:id="colActions" text="Действия" prefWidth="150"/>
+                            <TableColumn fx:id="colActions" text="Действия" prefWidth="200"/>
                         </columns>
                     </TableView>
                 </VBox>

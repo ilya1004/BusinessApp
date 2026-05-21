@@ -28,7 +28,7 @@
         <WebView fx:id="webView"/>
     </center>
     <right>
-        <ScrollPane fitToWidth="true" styleClass="properties-panel" prefWidth="280" minWidth="280">
+        <ScrollPane fitToWidth="true" styleClass="properties-panel" prefWidth="320" minWidth="320">
             <VBox spacing="10" style="-fx-padding: 15;">
                 <Label text="Свойства" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
                 <Separator/>

@@ -73,7 +73,12 @@ public class ProfileController {
             usernameLabel.setText("@" + user.username());
             deptLabel.setText(user.departmentName());
 
-            loadUserKpi();
+            if ("EXECUTOR".equals(user.role())) {
+                loadUserKpi();
+            } else {
+                statsContainer.setVisible(false);
+                chartContainer.setVisible(false);
+            }
         } catch (Exception e) {
             showAlert("Ошибка загрузки профиля: " + e.getMessage());
             e.printStackTrace();

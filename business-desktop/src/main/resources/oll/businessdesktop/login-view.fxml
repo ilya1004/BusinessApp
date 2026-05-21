@@ -22,8 +22,11 @@
             <TextField fx:id="usernameField" promptText="Введите имя пользователя" styleClass="login-field"/>
 
             <Label text="Пароль" styleClass="field-label"/>
-<!--            <PasswordField fx:id="passwordField" promptText="Введите пароль" styleClass="login-field"/>-->
-            <TextField fx:id="passwordField" promptText="Введите пароль" styleClass="login-field"/>
+            <StackPane>
+                <PasswordField fx:id="passwordField" promptText="Введите пароль" styleClass="login-field"/>
+                <TextField fx:id="visiblePasswordField" promptText="Введите пароль" styleClass="login-field" visible="false" managed="false"/>
+                <Button fx:id="togglePasswordBtn" onAction="#togglePasswordVisibility" text="" StackPane.alignment="CENTER_RIGHT" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0 8 0 0;"/>
+            </StackPane>
         </VBox>
 
         <Button text="Войти" onAction="#onLogin" styleClass="login-button" maxWidth="Infinity"/>
