@@ -1,0 +1,149 @@
+@startuml
+!theme plain
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontSize 12
+skinparam packageStyle rectangle
+
+hide empty members
+
+' ========== ENUMS ==========
+
+enum Role {
+  ADMIN
+  ANALYST
+  MANAGER
+  EXECUTOR
+}
+
+enum TaskStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+  CANCELLED
+}
+
+enum ProcessStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+' ========== ENTITIES ==========
+
+entity "app_user" as User {
+  * id: Long <<generated>>
+  --
+  * username: String <<unique>>
+  * password_hash: String
+  * role: Role <<enum>>
+  * first_name: String
+  * last_name: String
+  department_id: Long <<FK>>
+}
+
+entity "department" as Department {
+  * id: Long <<generated>>
+  --
+  * name: String
+  parent_id: Long <<FK>>
+}
+
+entity "process_model" as ProcessModel {
+  * id: Long <<generated>>
+  --
+  * name: String
+  * bpmn_xml: String <<TEXT>>
+  * version: Integer
+  author_id: Long <<FK>>
+  created_at: DateTime
+}
+
+entity "task_definition" as TaskDefinition {
+  * id: Long <<generated>>
+  --
+  * model_id: Long <<FK>>
+  * bpmn_element_id: String
+  * name: String
+  * default_duration: Integer
+  * expected_cost: BigDecimal
+  kpi_weight: BigDecimal
+}
+
+entity "process_instance" as ProcessInstance {
+  * id: Long <<generated>>
+  --
+  * model_id: Long <<FK>>
+  * status: ProcessStatus <<enum>>
+  started_at: DateTime
+  finished_at: DateTime
+  current_state: String
+  name: String
+}
+
+entity "task" as Task {
+  * id: Long <<generated>>
+  --
+  * instance_id: Long <<FK>>
+  * task_definition_id: Long <<FK>>
+  assignee_id: Long <<FK>>
+  * status: TaskStatus <<enum>>
+  * planned_duration: Integer
+  actual_duration: Integer
+  started_at: DateTime
+  completed_at: DateTime
+  due_date: DateTime
+}
+
+entity "kpi_weights" as KpiWeights {
+  * id: Long <<generated>>
+  --
+  model_id: Long <<FK>>
+  * w1: BigDecimal
+  * w2: BigDecimal
+  * w3: BigDecimal
+  updated_by: Long <<FK>>
+  * updated_at: DateTime
+}
+
+entity "scenario_simulation" as ScenarioSimulation {
+  * id: Long <<generated>>
+  --
+  * model_id: Long <<FK>>
+  * parameters_json: String <<TEXT>>
+  predicted_kpi: String <<TEXT>>
+  created_by: Long <<FK>>
+}
+
+entity "app_logs" as AppLog {
+  * id: Long <<generated>>
+  --
+  * timestamp: DateTime
+  * level: String
+  * message: String
+  source: String
+  action: String
+  user_id: Long
+  details: String
+}
+
+' ========== RELATIONSHIPS ==========
+
+Department ||..|{ Department : "parent"
+Department ||..|{ User : "department"
+User ||..o{ ProcessModel : "author"
+User ||..o{ Task : "assignee"
+User ||..o{ KpiWeights : "updated by"
+User ||..o{ ScenarioSimulation : "created by"
+ProcessModel ||..|{ TaskDefinition : "task definitions"
+ProcessModel ||..o{ ProcessInstance : "instances"
+ProcessModel ||..o{ KpiWeights : "kpi weights"
+ProcessModel ||..o{ ScenarioSimulation : "simulations"
+ProcessInstance ||..|{ Task : "tasks"
+TaskDefinition ||..|{ Task : "task definition"
+
+@enduml
